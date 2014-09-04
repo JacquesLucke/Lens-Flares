@@ -36,10 +36,12 @@ def newText(name = "Text", location = [0, 0, 0], text = "text"):
 	textObject.data.body = text
 	return textObject
 	
-def newPlane(name = "Plane", location = [0, 0, 0]):
+def newPlane(name = "Plane", location = [0, 0, 0], size = 1):
 	bpy.ops.mesh.primitive_plane_add(location = location)
 	plane = bpy.context.object
 	plane.name = name
+	plane.scale = [size, size, size]
+	bpy.ops.object.transform_apply(scale = True)
 	return plane
 	
 def newCamera(name = "Camera", location = [0, 0, 0]):
@@ -353,6 +355,9 @@ def removeNodes(nodeTree):
 	for node in nodes:
 		nodes.remove(node)
 		
+def setMaterialOnObject(object, material):
+	object.data.materials.append(material)
+		
 def newOutputNode(nodeTree):
 	return nodeTree.nodes.new("ShaderNodeOutputMaterial")
 def newEmissionNode(nodeTree):
@@ -389,4 +394,10 @@ def loadImage(path):
 	
 def getRandom(min, max):
 	return random.random() * (max - min) + min
+	
+def makeOnlyVisibleToCamera(object):
+	object.cycles_visibility.glossy = False
+	object.cycles_visibility.diffuse = False
+	object.cycles_visibility.shadow = False
+	object.cycles_visibility.transmission = False
 					

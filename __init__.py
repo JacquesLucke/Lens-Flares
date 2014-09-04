@@ -33,19 +33,23 @@ bl_info = {
     "category":    "3D View"
     }
 	
+flareElementName = "flare element"
+	
 imagePath = "F:\Content\Texturen\Lens Flares u. ä\Lens Flares\SpotLight.png"
 	
 def newLensFlare():
-	plane = newPlane()
-	camera = getActiveCamera()
-	setParentWithoutInverse(plane, camera)
-	plane.location.z = -1 + getRandom(-0.01, 0.01)
-	
 	image = getImage(imagePath)
-	plane.scale.x = image.size[0] / image.size[1]
+	plane = newFlareElementPlane(image)
 	
+def newFlareElementPlane(image):
+	plane = newPlane(name = flareElementName, size = 0.1)
+	plane.scale.x = image.size[0] / image.size[1]
+	setParentWithoutInverse(plane, getActiveCamera())
+	plane.location.z = -1 + getRandom(-0.01, 0.01)
+	makeOnlyVisibleToCamera(plane)
 	material = newCyclesFlareMaterial(image)
-	plane.data.materials.append(material)
+	setMaterialOnObject(plane, material)
+	return plane
 	
 def newCyclesFlareMaterial(image):
 	material = newCyclesMaterial()
