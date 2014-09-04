@@ -50,15 +50,21 @@ def newLensFlare():
 def newFlareMaterial(image):
 	material = newCyclesMaterial()
 	cleanMaterial(material)
+	
 	nodeTree = material.node_tree
 	output = newOutputNode(nodeTree)
 	emission = newEmissionNode(nodeTree)
 	imageNode = newImageTextureNode(nodeTree)
+	transparent = newTransparentNode(nodeTree)
+	mixShader = newMixShader(nodeTree)
+	
 	imageNode.image = image
 	textureCoordinatesNode = newTextureCoordinatesNode(nodeTree)
-	newNodeLink(nodeTree, output.inputs[0], emission.outputs[0])
-	newNodeLink(nodeTree, emission.inputs[0], imageNode.outputs[0])
+	
 	newNodeLink(nodeTree, imageNode.inputs[0], textureCoordinatesNode.outputs["Generated"])
+	newNodeLink(nodeTree, emission.inputs[0], imageNode.outputs[0])
+	linkToMixShader(nodeTree, transparent.outputs[0], emission.outputs[0], mixShader, factor = imageNode.outputs[0])
+	newNodeLink(nodeTree, output.inputs[0], mixShader.outputs[0])
 	return material
 	
 	

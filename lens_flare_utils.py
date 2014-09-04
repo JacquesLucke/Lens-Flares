@@ -360,6 +360,15 @@ def newImageTextureNode(nodeTree):
 	return nodeTree.nodes.new("ShaderNodeTexImage")
 def newTextureCoordinatesNode(nodeTree):
 	return nodeTree.nodes.new("ShaderNodeTexCoord")
+def newTransparentNode(nodeTree):
+	return nodeTree.nodes.new("ShaderNodeBsdfTransparent")
+def newMixShader(nodeTree):
+	return nodeTree.nodes.new("ShaderNodeMixShader")
+	
+def linkToMixShader(nodeTree, socket1, socket2, mixShader, factor = None):
+	if factor is not None: newNodeLink(nodeTree, mixShader.inputs[0], factor)
+	newNodeLink(nodeTree, mixShader.inputs[1], socket1)
+	newNodeLink(nodeTree, mixShader.inputs[2], socket2)	
 def newNodeLink(nodeTree, inputSocket, outputSocket):
 	nodeTree.links.new(inputSocket, outputSocket)
 					
