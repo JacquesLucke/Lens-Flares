@@ -42,6 +42,7 @@ def newLensFlare():
 	plane.location.z = -1
 	
 	image = getImage(imagePath)
+	plane.scale.x = image.size[0] / image.size[1]
 	
 	material = newCyclesFlareMaterial(image)
 	plane.data.materials.append(material)
