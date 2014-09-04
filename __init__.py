@@ -39,7 +39,7 @@ def newLensFlare():
 	plane = newPlane()
 	camera = getActiveCamera()
 	setParentWithoutInverse(plane, camera)
-	plane.location.z = -1
+	plane.location.z = -1 + getRandom(-0.01, 0.01)
 	
 	image = getImage(imagePath)
 	plane.scale.x = image.size[0] / image.size[1]

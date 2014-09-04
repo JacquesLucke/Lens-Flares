@@ -18,7 +18,7 @@ Created by Jacques Lucke
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import bpy
+import bpy, random
 from bpy_extras.image_utils import load_image
 
 def newEmpty(name = "Empty", location = [0, 0, 0], hide = False, type = "PLAIN_AXES"):
@@ -386,4 +386,7 @@ def getImage(path):
 	return loadImage(path)
 def loadImage(path):
 	return load_image(path)
+	
+def getRandom(min, max):
+	return random.random() * (max - min) + min
 					
