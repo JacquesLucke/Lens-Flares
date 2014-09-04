@@ -34,7 +34,7 @@ bl_info = {
     "category":    "3D View"
     }
 	
-imagePath = "F:\Content\Texturen\Lens Flares u. ä\Lens Flares\Acrez2.jpg"
+imagePath = "F:\Content\Texturen\Lens Flares u. ä\Lens Flares\Blurry Sparkles By CodeDraco.png"
 	
 def newLensFlare():
 	plane = newPlane()
@@ -44,27 +44,32 @@ def newLensFlare():
 	
 	image = load_image(imagePath)
 	
-	material = newFlareMaterial(image)
+	material = newCyclesFlareMaterial(image)
 	plane.data.materials.append(material)
 	
-def newFlareMaterial(image):
+def newCyclesFlareMaterial(image):
 	material = newCyclesMaterial()
 	cleanMaterial(material)
 	
 	nodeTree = material.node_tree
-	output = newOutputNode(nodeTree)
-	emission = newEmissionNode(nodeTree)
+	textureCoordinatesNode = newTextureCoordinatesNode(nodeTree)
 	imageNode = newImageTextureNode(nodeTree)
+	toBw = newRgbToBwNode(nodeTree)
+	mixColor = newColorMixNode(nodeTree, type = "DIVIDE", factor = 1)
+	emission = newEmissionNode(nodeTree)
 	transparent = newTransparentNode(nodeTree)
 	mixShader = newMixShader(nodeTree)
+	output = newOutputNode(nodeTree)
 	
 	imageNode.image = image
-	textureCoordinatesNode = newTextureCoordinatesNode(nodeTree)
 	
-	newNodeLink(nodeTree, imageNode.inputs[0], textureCoordinatesNode.outputs["Generated"])
-	newNodeLink(nodeTree, emission.inputs[0], imageNode.outputs[0])
+	newNodeLink(nodeTree, textureCoordinatesNode.outputs["Generated"], imageNode.inputs[0])
+	newNodeLink(nodeTree, imageNode.outputs[0], toBw.inputs[0])
+	newNodeLink(nodeTree, imageNode.outputs[0], mixColor.inputs[1])
+	newNodeLink(nodeTree, toBw.outputs[0], mixColor.inputs[2])
+	newNodeLink(nodeTree, mixColor.outputs[0], emission.inputs[0])
 	linkToMixShader(nodeTree, transparent.outputs[0], emission.outputs[0], mixShader, factor = imageNode.outputs[0])
-	newNodeLink(nodeTree, output.inputs[0], mixShader.outputs[0])
+	newNodeLink(nodeTree, mixShader.outputs[0], output.inputs[0])
 	return material
 	
 	

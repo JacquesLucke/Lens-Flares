@@ -364,11 +364,18 @@ def newTransparentNode(nodeTree):
 	return nodeTree.nodes.new("ShaderNodeBsdfTransparent")
 def newMixShader(nodeTree):
 	return nodeTree.nodes.new("ShaderNodeMixShader")
+def newColorMixNode(nodeTree, type = "MIX", factor = 0.5):
+	node = nodeTree.nodes.new("ShaderNodeMixRGB")
+	node.blend_type = type
+	node.inputs[0].default_value = factor
+	return node
+def newRgbToBwNode(nodeTree):
+	return nodeTree.nodes.new("ShaderNodeRGBToBW")
 	
 def linkToMixShader(nodeTree, socket1, socket2, mixShader, factor = None):
 	if factor is not None: newNodeLink(nodeTree, mixShader.inputs[0], factor)
-	newNodeLink(nodeTree, mixShader.inputs[1], socket1)
-	newNodeLink(nodeTree, mixShader.inputs[2], socket2)	
-def newNodeLink(nodeTree, inputSocket, outputSocket):
-	nodeTree.links.new(inputSocket, outputSocket)
+	newNodeLink(nodeTree, socket1, mixShader.inputs[1])
+	newNodeLink(nodeTree, socket2, mixShader.inputs[2])	
+def newNodeLink(nodeTree, fromSocket, toSocket):
+	nodeTree.links.new(toSocket, fromSocket)
 					
