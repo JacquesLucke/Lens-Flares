@@ -19,6 +19,7 @@ Created by Jacques Lucke
 '''
 
 import sys, os, bpy
+from bpy_extras.image_utils import load_image
 sys.path.append(os.path.dirname(__file__)) 
 from lens_flare_utils import *
 
@@ -33,6 +34,7 @@ bl_info = {
     "category":    "3D View"
     }
 	
+imagePath = "F:\Content\Texturen\Lens Flares u. ä\Lens Flares\Acrez2.jpg"
 	
 def newLensFlare():
 	plane = newPlane()
@@ -40,13 +42,24 @@ def newLensFlare():
 	setParentWithoutInverse(plane, camera)
 	plane.location.z = -1
 	
+	image = load_image(imagePath)
+	
+	material = newFlareMaterial(image)
+	plane.data.materials.append(material)
+	
+def newFlareMaterial(image):
 	material = newCyclesMaterial()
 	cleanMaterial(material)
 	nodeTree = material.node_tree
-	output = nodeTree.nodes.new("ShaderNodeOutputMaterial")
-	emission = nodeTree.nodes.new("ShaderNodeEmission")
-	nodeTree.links.new(output.inputs[0], emission.outputs[0])
-	plane.data.materials.append(material)
+	output = newOutputNode(nodeTree)
+	emission = newEmissionNode(nodeTree)
+	imageNode = newImageTextureNode(nodeTree)
+	imageNode.image = image
+	textureCoordinatesNode = newTextureCoordinatesNode(nodeTree)
+	newNodeLink(nodeTree, output.inputs[0], emission.outputs[0])
+	newNodeLink(nodeTree, emission.inputs[0], imageNode.outputs[0])
+	newNodeLink(nodeTree, imageNode.inputs[0], textureCoordinatesNode.outputs["Generated"])
+	return material
 	
 	
 # interface

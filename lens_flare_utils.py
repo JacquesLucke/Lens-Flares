@@ -351,4 +351,15 @@ def removeNodes(nodeTree):
 	nodes = nodeTree.nodes
 	for node in nodes:
 		nodes.remove(node)
+		
+def newOutputNode(nodeTree):
+	return nodeTree.nodes.new("ShaderNodeOutputMaterial")
+def newEmissionNode(nodeTree):
+	return nodeTree.nodes.new("ShaderNodeEmission")
+def newImageTextureNode(nodeTree):
+	return nodeTree.nodes.new("ShaderNodeTexImage")
+def newTextureCoordinatesNode(nodeTree):
+	return nodeTree.nodes.new("ShaderNodeTexCoord")
+def newNodeLink(nodeTree, inputSocket, outputSocket):
+	nodeTree.links.new(inputSocket, outputSocket)
 					
