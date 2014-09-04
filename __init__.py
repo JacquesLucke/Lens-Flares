@@ -19,7 +19,6 @@ Created by Jacques Lucke
 '''
 
 import sys, os, bpy
-from bpy_extras.image_utils import load_image
 sys.path.append(os.path.dirname(__file__)) 
 from lens_flare_utils import *
 
@@ -34,7 +33,7 @@ bl_info = {
     "category":    "3D View"
     }
 	
-imagePath = "F:\Content\Texturen\Lens Flares u. ä\Lens Flares\Blurry Sparkles By CodeDraco.png"
+imagePath = "F:\Content\Texturen\Lens Flares u. ä\Lens Flares\SpotLight.png"
 	
 def newLensFlare():
 	plane = newPlane()
@@ -42,7 +41,7 @@ def newLensFlare():
 	setParentWithoutInverse(plane, camera)
 	plane.location.z = -1
 	
-	image = load_image(imagePath)
+	image = getImage(imagePath)
 	
 	material = newCyclesFlareMaterial(image)
 	plane.data.materials.append(material)

@@ -19,6 +19,7 @@ Created by Jacques Lucke
 '''
 
 import bpy
+from bpy_extras.image_utils import load_image
 
 def newEmpty(name = "Empty", location = [0, 0, 0], hide = False, type = "PLAIN_AXES"):
 	bpy.ops.object.empty_add(location = location, type = type)
@@ -378,4 +379,11 @@ def linkToMixShader(nodeTree, socket1, socket2, mixShader, factor = None):
 	newNodeLink(nodeTree, socket2, mixShader.inputs[2])	
 def newNodeLink(nodeTree, fromSocket, toSocket):
 	nodeTree.links.new(toSocket, fromSocket)
+
+def getImage(path):
+	for image in bpy.data.images:
+		if path == image.filepath: return image
+	return loadImage(path)
+def loadImage(path):
+	return load_image(path)
 					
