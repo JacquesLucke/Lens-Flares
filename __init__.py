@@ -20,7 +20,7 @@ Created by Jacques Lucke
 
 import sys, os, bpy
 sys.path.append(os.path.dirname(__file__)) 
-from utils import *
+from lens_flare_utils import *
 
 
 bl_info = {
@@ -35,7 +35,7 @@ bl_info = {
 	
 	
 def newLensFlare():
-	print("hi")
+	plane = newPlane()
 	
 	
 # interface

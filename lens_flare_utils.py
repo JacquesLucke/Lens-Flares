@@ -34,6 +34,12 @@ def newText(name = "Text", location = [0, 0, 0], text = "text"):
 	textObject.name = name
 	textObject.data.body = text
 	return textObject
+	
+def newPlane(name = "Plane", location = [0, 0, 0]):
+	bpy.ops.mesh.primitive_plane_add(location = location)
+	plane = bpy.context.object
+	plane.name = name
+	return plane
 
 def setTrackTo(child, trackTo):
 	deselectAll()
