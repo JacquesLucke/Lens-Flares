@@ -36,6 +36,17 @@ bl_info = {
 	
 def newLensFlare():
 	plane = newPlane()
+	camera = getActiveCamera()
+	setParentWithoutInverse(plane, camera)
+	plane.location.z = -1
+	
+	material = newCyclesMaterial()
+	cleanMaterial(material)
+	nodeTree = material.node_tree
+	output = nodeTree.nodes.new("ShaderNodeOutputMaterial")
+	emission = nodeTree.nodes.new("ShaderNodeEmission")
+	nodeTree.links.new(output.inputs[0], emission.outputs[0])
+	plane.data.materials.append(material)
 	
 	
 # interface

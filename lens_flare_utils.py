@@ -40,6 +40,16 @@ def newPlane(name = "Plane", location = [0, 0, 0]):
 	plane = bpy.context.object
 	plane.name = name
 	return plane
+	
+def newCamera(name = "Camera", location = [0, 0, 0]):
+	bpy.ops.object.camera_add(location = location)
+	camera = bpy.context.object
+	camera.name = name
+	return camera
+	
+def getActiveCamera():
+	if bpy.context.scene.camera is None: return newCamera()
+	else: return bpy.context.scene.camera
 
 def setTrackTo(child, trackTo):
 	deselectAll()
@@ -327,4 +337,18 @@ def getDataPathFromPropertyName(name):
 	
 def getObjectFromValidIndex(list, index):
 	return list[clamp(index, 0, len(list) - 1)]
+	
+
+def newCyclesMaterial(name = "Material"):
+	material = newMaterial()
+	material.use_nodes = True
+	return material
+def newMaterial(name = "Material"):
+	return bpy.data.materials.new(name = name)
+def cleanMaterial(material):
+	removeNodes(material.node_tree)
+def removeNodes(nodeTree):
+	nodes = nodeTree.nodes
+	for node in nodes:
+		nodes.remove(node)
 					
