@@ -175,57 +175,61 @@ def setStartDistanceProperty(startDistanceCalculator, angleCalculator, center):
 def newStartElement(flareControler, camera, startDistanceCalculator):
 	startElement = newEmpty(name = startElementPrefix)
 	setParentWithoutInverse(startElement, flareControler)
-	constraint = newLinkedLimitLocationConstraint(startElement)
-	setStartLocationDrivers(startElement, camera, flareControler, constraint, startDistanceCalculator)
+	setStartLocationDrivers(startElement, camera, flareControler, startDistanceCalculator)
 	return startElement
 	
-def setStartLocationDrivers(startElement, camera, flareControler, constraint, startDistanceCalculator):
+def setStartLocationDrivers(startElement, camera, flareControler, startDistanceCalculator):
+	constraint = startElement.constraints.new(type = "LIMIT_LOCATION")
+	setUseMinMaxToTrue(constraint)
 	constraintPath = 'constraints["' + constraint.name + '"]'
 	
-	driver = newDriver(startElement, constraintPath + ".min_x")
-	linkFloatPropertyToDriver(driver, "direction", flareControler, directionXPath)
-	linkFloatPropertyToDriver(driver, "distance", startDistanceCalculator, startDistancePath)
-	linkTransformChannelToDriver(driver, "cam", camera, "LOC_X")
-	driver.expression = "direction*distance+cam"
-	
-	driver = newDriver(startElement, constraintPath + ".min_y")
-	linkFloatPropertyToDriver(driver, "direction", flareControler, directionYPath)
-	linkFloatPropertyToDriver(driver, "distance", startDistanceCalculator, startDistancePath)
-	linkTransformChannelToDriver(driver, "cam", camera, "LOC_Y")
-	driver.expression = "direction*distance+cam"
-	
-	driver = newDriver(startElement, constraintPath + ".min_z")
-	linkFloatPropertyToDriver(driver, "direction", flareControler, directionZPath)
-	linkFloatPropertyToDriver(driver, "distance", startDistanceCalculator, startDistancePath)
-	linkTransformChannelToDriver(driver, "cam", camera, "LOC_Z")
-	driver.expression = "direction*distance+cam"
+	for val in [".min", ".max"]:
+		driver = newDriver(startElement, constraintPath + val + "_x")
+		linkFloatPropertyToDriver(driver, "direction", flareControler, directionXPath)
+		linkFloatPropertyToDriver(driver, "distance", startDistanceCalculator, startDistancePath)
+		linkTransformChannelToDriver(driver, "cam", camera, "LOC_X")
+		driver.expression = "direction*distance+cam"
+		
+		driver = newDriver(startElement, constraintPath + val + "_y")
+		linkFloatPropertyToDriver(driver, "direction", flareControler, directionYPath)
+		linkFloatPropertyToDriver(driver, "distance", startDistanceCalculator, startDistancePath)
+		linkTransformChannelToDriver(driver, "cam", camera, "LOC_Y")
+		driver.expression = "direction*distance+cam"
+		
+		driver = newDriver(startElement, constraintPath + val + "_z")
+		linkFloatPropertyToDriver(driver, "direction", flareControler, directionZPath)
+		linkFloatPropertyToDriver(driver, "distance", startDistanceCalculator, startDistancePath)
+		linkTransformChannelToDriver(driver, "cam", camera, "LOC_Z")
+		driver.expression = "direction*distance+cam"
 	
 # end element creation
 
 def newEndElement(flareControler, startElement, center, camera):
 	endElement = newEmpty(name = endElementPrefix)
 	setParentWithoutInverse(endElement, flareControler)
-	constraint = newLinkedLimitLocationConstraint(endElement)
-	setEndLocationDrivers(endElement, startElement, center, constraint)
+	setEndLocationDrivers(endElement, startElement, center)
 	return endElement
 	
-def setEndLocationDrivers(endElement, startElement, center, constraint):
+def setEndLocationDrivers(endElement, startElement, center):
+	constraint = endElement.constraints.new(type = "LIMIT_LOCATION")
+	setUseMinMaxToTrue(constraint)
 	constraintPath = 'constraints["' + constraint.name + '"]'
 
-	driver = newDriver(endElement, constraintPath + ".min_x")
-	linkTransformChannelToDriver(driver, "start", startElement, "LOC_X")
-	linkTransformChannelToDriver(driver, "center", center, "LOC_X")
-	driver.expression = "2*center - start"
-	
-	driver = newDriver(endElement, constraintPath + ".min_y")
-	linkTransformChannelToDriver(driver, "start", startElement, "LOC_Y")
-	linkTransformChannelToDriver(driver, "center", center, "LOC_Y")
-	driver.expression = "2*center - start"
-	
-	driver = newDriver(endElement, constraintPath + ".min_z")
-	linkTransformChannelToDriver(driver, "start", startElement, "LOC_Z")
-	linkTransformChannelToDriver(driver, "center", center, "LOC_Z")
-	driver.expression = "2*center - start"
+	for val in [".min", ".max"]:
+		driver = newDriver(endElement, constraintPath + val + "_x")
+		linkTransformChannelToDriver(driver, "start", startElement, "LOC_X")
+		linkTransformChannelToDriver(driver, "center", center, "LOC_X")
+		driver.expression = "2*center - start"
+		
+		driver = newDriver(endElement, constraintPath + val + "_y")
+		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Y")
+		linkTransformChannelToDriver(driver, "center", center, "LOC_Y")
+		driver.expression = "2*center - start"
+		
+		driver = newDriver(endElement, constraintPath + val + "_z")
+		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Z")
+		linkTransformChannelToDriver(driver, "center", center, "LOC_Z")
+		driver.expression = "2*center - start"
 	
 	
 
