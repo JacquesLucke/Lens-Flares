@@ -44,6 +44,7 @@ angleCalculatorPrefix = "angle calculator"
 startDistanceCalculatorPrefix = "start distance calculator"
 flareElementPrefix = "flare element"
 cameraCenterPrefix = "center of camera"
+cameraDirectionCalculatorPrefix = "camera direction calculator"
 startElementPrefix = "start element"
 endElementPrefix = "end element"
 
@@ -77,10 +78,11 @@ def newLensFlare():
 	
 	target = getActive()
 	camera = getActiveCamera()
+	cameraDirectionCalculator = getCameraDirectionCalculator(camera)
 	center = getCenterEmpty(camera)
 	flareControler = newFlareControler(camera, target, center)	
-	angleCalculator = newAngleCalculator(flareControler, camera, target, center)
-	startDistanceCalculator = newStartDistanceCalculator(flareControler, angleCalculator, center)
+	angleCalculator = newAngleCalculator(flareControler, camera, target, center, cameraDirectionCalculator)
+	startDistanceCalculator = newStartDistanceCalculator(flareControler, angleCalculator, center, camera)
 	
 	startElement = newStartElement(flareControler, camera, startDistanceCalculator)
 	endElement = newEndElement(flareControler, startElement, center, camera)
@@ -88,6 +90,34 @@ def newLensFlare():
 	angleCalculator.hide = True
 	startDistanceCalculator.hide = True
 
+# camera direction calculator
+
+def getCameraDirectionCalculator(camera):
+	directionCalculators = getCameraDirectionCalculators()
+	for calculator in directionCalculators:
+		if calculator.parent == camera:
+			return calculator
+	return newCameraDirectionCalculator(camera)
+	
+def getCameraDirectionCalculators():
+	calculators = []
+	for object in bpy.data.objects:
+		if hasPrefix(object.name, cameraDirectionCalculatorPrefix):
+			calculators.append(object)
+	return calculators
+	
+def newCameraDirectionCalculator(camera):
+	calculator = newEmpty(name = cameraDirectionCalculatorPrefix)
+	setParentWithoutInverse(calculator, camera)
+	calculator.location.z = -1
+	setCameraDirectionProperties(calculator, camera)
+	return calculator
+	
+def setCameraDirectionProperties(directionCalculator, camera):
+	setTransformDifferenceAsProperty(directionCalculator, camera, directionXName, "LOC_X", normalized = True)
+	setTransformDifferenceAsProperty(directionCalculator, camera, directionYName, "LOC_Y", normalized = True)
+	setTransformDifferenceAsProperty(directionCalculator, camera, directionZName, "LOC_Z", normalized = True)
+	
 # center creation	
 
 def getCenterEmpty(camera):
@@ -108,20 +138,35 @@ def newCenterEmpty(camera):
 	center = newEmpty(name = cameraCenterPrefix, type = "SPHERE")
 	setParentWithoutInverse(center, camera)
 	center.empty_draw_size = 0.1
-	lockCurrentLocalLocation(center, zAxes = False)
-	linkCenterDistanceToLocation(center, camera, getDofObject(camera))
-	setCameraDirectionProperties(center, camera)
+	
+	dof = getDofObject(camera)
+	directionCalculator = getCameraDirectionCalculator(camera)
+	
+	constraint = center.constraints.new(type = "LIMIT_LOCATION")
+	setUseMinMaxToTrue(constraint)
+	constraintPath = 'constraints["' + constraint.name + '"]'
+	
+	for val in [".min", ".max"]:
+		driver = newDriver(center, constraintPath + val + "_x")
+		linkFloatPropertyToDriver(driver, "direction", directionCalculator, directionXPath)
+		linkDistanceToDriver(driver, "distance", camera, dof)
+		linkTransformChannelToDriver(driver, "cam", camera, "LOC_X")
+		driver.expression = "-direction*distance+cam"
+		
+		driver = newDriver(center, constraintPath + val + "_y")
+		linkFloatPropertyToDriver(driver, "direction", directionCalculator, directionYPath)
+		linkDistanceToDriver(driver, "distance", camera, dof)
+		linkTransformChannelToDriver(driver, "cam", camera, "LOC_Y")
+		driver.expression = "-direction*distance+cam"
+		
+		driver = newDriver(center, constraintPath + val + "_z")
+		linkFloatPropertyToDriver(driver, "direction", directionCalculator, directionZPath)
+		linkDistanceToDriver(driver, "distance", camera, dof)
+		linkTransformChannelToDriver(driver, "cam", camera, "LOC_Z")
+		driver.expression = "-direction*distance+cam"
+	
 	return center
 	
-def linkCenterDistanceToLocation(center, camera, dof):
-	driver = newDriver(center, "location", index = 2)
-	linkDistanceToDriver(driver, "var", camera, dof)
-	driver.expression = "-var"
-	
-def setCameraDirectionProperties(center, camera):
-	setTransformDifferenceAsProperty(center, camera, directionXName, "LOC_X", normalized = True)
-	setTransformDifferenceAsProperty(center, camera, directionYName, "LOC_Y", normalized = True)
-	setTransformDifferenceAsProperty(center, camera, directionZName, "LOC_Z", normalized = True)
 	
 # flare controler creation	
 
@@ -139,38 +184,37 @@ def setTargetDirectionProperties(flareControler, target):
 	
 # angle calculator
 
-def newAngleCalculator(flareControler, camera, target, center):
+def newAngleCalculator(flareControler, camera, target, center, cameraDirectionCalculator):
 	angleCalculator = newEmpty(name = angleCalculatorPrefix)
 	setParentWithoutInverse(angleCalculator, flareControler)
-	setTargetAngleProperty(angleCalculator, flareControler, center)
-	setStartDistanceProperty(angleCalculator, flareControler, center)
+	setTargetAngleProperty(angleCalculator, flareControler, cameraDirectionCalculator)
 	return angleCalculator
 	
-def setTargetAngleProperty(angleCalculator, flareControler, center):
+def setTargetAngleProperty(angleCalculator, flareControler, cameraDirectionCalculator):
 	setCustomProperty(angleCalculator, angleName)
 	driver = newDriver(angleCalculator, anglePath)
 	linkFloatPropertyToDriver(driver, "x1", flareControler, directionXPath)
 	linkFloatPropertyToDriver(driver, "y1", flareControler, directionYPath)
 	linkFloatPropertyToDriver(driver, "z1", flareControler, directionZPath)	
-	linkFloatPropertyToDriver(driver, "x2", center, directionXPath)
-	linkFloatPropertyToDriver(driver, "y2", center, directionYPath)
-	linkFloatPropertyToDriver(driver, "z2", center, directionZPath)
+	linkFloatPropertyToDriver(driver, "x2", cameraDirectionCalculator, directionXPath)
+	linkFloatPropertyToDriver(driver, "y2", cameraDirectionCalculator, directionYPath)
+	linkFloatPropertyToDriver(driver, "z2", cameraDirectionCalculator, directionZPath)
 	driver.expression = "degrees(acos(x1*x2+y1*y2+z1*z2))"
 	
 # start distance calculator
 	
-def newStartDistanceCalculator(flareControler, angleCalculator, center):
+def newStartDistanceCalculator(flareControler, angleCalculator, center, camera):
 	startDistanceCalculator = newEmpty(name = startDistanceCalculatorPrefix)
 	setParentWithoutInverse(startDistanceCalculator, flareControler)
-	setStartDistanceProperty(startDistanceCalculator, angleCalculator, center)
+	setStartDistanceProperty(startDistanceCalculator, angleCalculator, center, camera)
 	return startDistanceCalculator
 	
-def setStartDistanceProperty(startDistanceCalculator, angleCalculator, center):
+def setStartDistanceProperty(startDistanceCalculator, angleCalculator, center, camera):
 	setCustomProperty(startDistanceCalculator, startDistanceName)
 	driver = newDriver(startDistanceCalculator, startDistancePath)
-	linkTransformChannelToDriver(driver, "plainDistance", center, "LOC_Z", space = "LOCAL_SPACE")
+	linkDistanceToDriver(driver, "distance", center, camera)
 	linkFloatPropertyToDriver(driver, "angle", angleCalculator, anglePath)
-	driver.expression = "plainDistance/cos(radians(angle))"
+	driver.expression = "-distance/cos(radians(angle))"
 
 # start element creation
 	
