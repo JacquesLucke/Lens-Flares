@@ -45,13 +45,15 @@ worldYName = "world y"
 worldZName = "world z"
 dofDistanceName = "dof distance"
 plainDistanceName = "plane distance"
-cameraDirectionXName = "camera direction x"
-cameraDirectionYName = "camera direction y"
-cameraDirectionZName = "camera direction z"
+directionXName = "direction x"
+directionYName = "direction y"
+directionZName = "direction z"
+angleName = "angle"
 
 worldXPath = getDataPath(worldXName)
 worldYPath = getDataPath(worldYName)
 worldZPath = getDataPath(worldZName)
+anglePath = getDataPath(angleName)
 
 #temporary
 plainDistance = 4	
@@ -64,17 +66,28 @@ def newLensFlare():
 	target = getActive()
 	camera = getActiveCamera()
 	center = getCenterEmpty(camera)
-	flareControler = newFlareControler(camera, target)	
+	flareControler = newFlareControler(camera, target, center)	
 	
-def newFlareControler(camera, target):
+def newFlareControler(camera, target, center):
 	flareControler = newEmpty()
 	setParentWithoutInverse(flareControler, camera)	
 	setTargetDirectionProperties(flareControler, target)
+	setTargetAngleProperty(flareControler, camera, center)
 	return flareControler
 def setTargetDirectionProperties(flareControler, target):
-	setTransformDifferenceAsProperty(flareControler, target, cameraDirectionXName, "LOC_X", normalized = True)
-	setTransformDifferenceAsProperty(flareControler, target, cameraDirectionYName, "LOC_Y", normalized = True)
-	setTransformDifferenceAsProperty(flareControler, target, cameraDirectionZName, "LOC_Z", normalized = True)
+	setTransformDifferenceAsProperty(flareControler, target, directionXName, "LOC_X", normalized = True)
+	setTransformDifferenceAsProperty(flareControler, target, directionYName, "LOC_Y", normalized = True)
+	setTransformDifferenceAsProperty(flareControler, target, directionZName, "LOC_Z", normalized = True)
+def setTargetAngleProperty(flareControler, camera, center):
+	setCustomProperty(flareControler, angleName)
+	driver = newDriver(flareControler, anglePath)
+	linkFloatPropertyToDriver(driver, "x1", flareControler, getDataPath(directionXName))
+	linkFloatPropertyToDriver(driver, "y1", flareControler, getDataPath(directionYName))
+	linkFloatPropertyToDriver(driver, "z1", flareControler, getDataPath(directionZName))
+	
+	linkFloatPropertyToDriver(driver, "x2", center, getDataPath(directionXName))
+	linkFloatPropertyToDriver(driver, "y2", center, getDataPath(directionYName))
+	linkFloatPropertyToDriver(driver, "z2", center, getDataPath(directionZName))
 	
 def getCenterEmpty(camera):
 	centers = getCenterEmpties()
@@ -108,9 +121,9 @@ def setDistanceProperty(target, propertyName, object1, object2):
 	driver = newDriver(target, getDataPath(propertyName), type = "SUM")
 	linkDistanceToDriver(driver, "var", object1, object2)
 def setCameraDirectionProperties(center, camera):
-	setTransformDifferenceAsProperty(center, camera, cameraDirectionXName, "LOC_X", normalized = True)
-	setTransformDifferenceAsProperty(center, camera, cameraDirectionYName, "LOC_Y", normalized = True)
-	setTransformDifferenceAsProperty(center, camera, cameraDirectionZName, "LOC_Z", normalized = True)
+	setTransformDifferenceAsProperty(center, camera, directionXName, "LOC_X", normalized = True)
+	setTransformDifferenceAsProperty(center, camera, directionYName, "LOC_Y", normalized = True)
+	setTransformDifferenceAsProperty(center, camera, directionZName, "LOC_Z", normalized = True)
 
 	
 	
