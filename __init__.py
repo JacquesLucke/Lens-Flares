@@ -106,12 +106,8 @@ def setStartDistanceProperty(flareControler, center):
 def newStartElement(flareControler, camera):
 	startElement = newEmpty(name = startElementPrefix)
 	setParentWithoutInverse(startElement, flareControler)
-	constraint = startElement.constraints.new(type = "LIMIT_LOCATION")
-	setUseMinMaxToTrue(constraint)
+	constraint = newLinkedLimitLocationConstraint(startElement)
 	constraintPath = 'constraints["' + constraint.name + '"]'
-	createCopyValueDriver(startElement, constraintPath + ".min_x", startElement, constraintPath + ".max_x")
-	createCopyValueDriver(startElement, constraintPath + ".min_y", startElement, constraintPath + ".max_y")
-	createCopyValueDriver(startElement, constraintPath + ".min_z", startElement, constraintPath + ".max_z")
 	
 	driver = newDriver(startElement, constraintPath + ".min_x")
 	linkFloatPropertyToDriver(driver, "direction", flareControler, directionXPath)

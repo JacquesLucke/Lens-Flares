@@ -174,7 +174,16 @@ def getObjectReference(object, name):
 def removeObjectReference(object, name):
 	if name in object.constraints:
 		object.constraints.remove(object.constraints[name])
-		
+	
+def newLinkedLimitLocationConstraint(object):
+	constraint = object.constraints.new(type = "LIMIT_LOCATION")
+	setUseMinMaxToTrue(constraint)
+	constraintPath = 'constraints["' + constraint.name + '"]'
+	createCopyValueDriver(object, constraintPath + ".min_x", object, constraintPath + ".max_x")
+	createCopyValueDriver(object, constraintPath + ".min_y", object, constraintPath + ".max_y")
+	createCopyValueDriver(object, constraintPath + ".min_z", object, constraintPath + ".max_z")
+	return constraint
+	
 def lockCurrentTransforms(object):
 	lockCurrentLocalLocation(object)
 	lockCurrentLocalRotation(object)
