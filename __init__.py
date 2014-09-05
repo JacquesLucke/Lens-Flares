@@ -103,19 +103,13 @@ def newCenterEmpty(camera):
 	center = newEmpty(name = cameraCenterPrefix, type = "SPHERE")
 	setParentWithoutInverse(center, camera)
 	center.empty_draw_size = 0.1
-	setDistanceProperty(center, dofDistanceName, camera, getDofObject(camera))
-	linkCenterDistanceToLocation(center)
+	linkCenterDistanceToLocation(center, camera, getDofObject(camera))
 	setCameraDirectionProperties(center, camera)
 	return center
 	
-def setDistanceProperty(target, propertyName, object1, object2):
-	setCustomProperty(target, propertyName, 4.0)
-	driver = newDriver(target, getDataPath(propertyName), type = "SUM")
-	linkDistanceToDriver(driver, "var", object1, object2)
-	
-def linkCenterDistanceToLocation(center):
+def linkCenterDistanceToLocation(center, camera, dof):
 	driver = newDriver(center, "location", index = 2)
-	linkFloatPropertyToDriver(driver, "var", center, dofDistancePath)
+	linkDistanceToDriver(driver, "var", camera, dof)
 	driver.expression = "-var"
 	
 def setCameraDirectionProperties(center, camera):
