@@ -336,7 +336,7 @@ def getCameraFromCenter(center):
 	
 def getStartElement(flareControler):
 	for object in bpy.data.objects:
-		if isStartElement(object):
+		if isStartElement(object) and object.parent == flareControler:
 			return object
 	return None
 	
@@ -345,7 +345,7 @@ def isStartElement(object):
 	
 def getEndElement(flareControler):
 	for object in bpy.data.objects:
-		if isEndElement(object):
+		if isEndElement(object) and object.parent == flareControler:
 			return object
 	return None
 	
