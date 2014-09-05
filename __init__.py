@@ -87,6 +87,8 @@ def newLensFlare():
 	
 	angleCalculator.hide = True
 	startDistanceCalculator.hide = True
+	startElement.hide = True
+	endElement.hide = True
 
 # camera direction calculator
 
@@ -110,6 +112,7 @@ def newCameraDirectionCalculator(camera):
 	calculator.location.z = -1
 	lockCurrentLocalLocation(calculator)
 	setCameraDirectionProperties(calculator, camera)
+	calculator.hide = True
 	return calculator
 	
 def setCameraDirectionProperties(directionCalculator, camera):
