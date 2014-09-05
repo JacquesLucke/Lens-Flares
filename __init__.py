@@ -247,29 +247,31 @@ def newFlareElement():
 	setCustomProperty(flareElement, randomOffsetName, getRandom(-0.01, 0.01))
 	setCustomProperty(flareElement, elementPositionName, 0.2)
 	
-	constraint = newLinkedLimitLocationConstraint(flareElement)
+	constraint = flareElement.constraints.new(type = "LIMIT_LOCATION")
+	setUseMinMaxToTrue(constraint)
 	constraintPath = 'constraints["' + constraint.name + '"]'
 	
-	driver = newDriver(flareElement, constraintPath + ".min_x")
-	linkTransformChannelToDriver(driver, "start", startElement, "LOC_X")
-	linkTransformChannelToDriver(driver, "end", endElement, "LOC_X")
-	linkFloatPropertyToDriver(driver, "position", flareElement, elementPositionPath)
-	linkFloatPropertyToDriver(driver, "random", flareElement, randomOffsetPath)
-	driver.expression = "start * (1-position) + end * position + random"
-	
-	driver = newDriver(flareElement, constraintPath + ".min_y")
-	linkTransformChannelToDriver(driver, "start", startElement, "LOC_Y")
-	linkTransformChannelToDriver(driver, "end", endElement, "LOC_Y")
-	linkFloatPropertyToDriver(driver, "position", flareElement, elementPositionPath)
-	linkFloatPropertyToDriver(driver, "random", flareElement, randomOffsetPath)
-	driver.expression = "start * (1-position) + end * position + random"
-	
-	driver = newDriver(flareElement, constraintPath + ".min_z")
-	linkTransformChannelToDriver(driver, "start", startElement, "LOC_Z")
-	linkTransformChannelToDriver(driver, "end", endElement, "LOC_Z")
-	linkFloatPropertyToDriver(driver, "position", flareElement, elementPositionPath)
-	linkFloatPropertyToDriver(driver, "random", flareElement, randomOffsetPath)
-	driver.expression = "start * (1-position) + end * position + random"
+	for val in [".min", ".max"]:
+		driver = newDriver(flareElement, constraintPath + val + "_x")
+		linkTransformChannelToDriver(driver, "start", startElement, "LOC_X")
+		linkTransformChannelToDriver(driver, "end", endElement, "LOC_X")
+		linkFloatPropertyToDriver(driver, "position", flareElement, elementPositionPath)
+		linkFloatPropertyToDriver(driver, "random", flareElement, randomOffsetPath)
+		driver.expression = "start * (1-position) + end * position + random"
+		
+		driver = newDriver(flareElement, constraintPath + val + "_y")
+		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Y")
+		linkTransformChannelToDriver(driver, "end", endElement, "LOC_Y")
+		linkFloatPropertyToDriver(driver, "position", flareElement, elementPositionPath)
+		linkFloatPropertyToDriver(driver, "random", flareElement, randomOffsetPath)
+		driver.expression = "start * (1-position) + end * position + random"
+		
+		driver = newDriver(flareElement, constraintPath + val + "_z")
+		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Z")
+		linkTransformChannelToDriver(driver, "end", endElement, "LOC_Z")
+		linkFloatPropertyToDriver(driver, "position", flareElement, elementPositionPath)
+		linkFloatPropertyToDriver(driver, "random", flareElement, randomOffsetPath)
+		driver.expression = "start * (1-position) + end * position + random"
 	
 
 def newFlareElementPlane(image):
