@@ -289,17 +289,54 @@ def newCyclesFlareMaterial(image):
 # utils
 ################################
 	
-def getFlareEmpty():
-	for object in bpy.data.objects:
-		print(object.name)
-		if hasPrefix(object.name, flareEmptyPrefix):
-			return object
-	return None
+def getActiveFlareEmpty():
+	active = getActive()
+	if isFlareControler(active): return active
+	else: return None
+
+def isFlareControler(object):
+	if hasPrefix(object.name, flareEmptyPrefix):
+		return True
+	return False
 	
 def getCameraFromFlareControler(flareControler):
 	return flareControler.parent
 	
+def getCenterFromCamera(camera):
+	for object in bpy.data.objects:
+		if isCenterEmpty(object):
+			if getCameraFromCenter(object) == camera:
+				return True
+	return False
+
+def isCenterEmpty(object):
+	return hasPrefix(object.name, cameraCenterPrefix) and isCameraObject(object.parent)
+	
+def getCameraFromCenter(center):
+	return center.parent
+	
+def getStartElement(flareControler):
+	for object in bpy.data.objects:
+		if isStartElement(object):
+			return object
+	return None
+	
+def isStartElement(object):
+	return hasPrefix(object.name, startElementPrefix) and isFlareControler(object.parent)
+	
+def getEndElement(flareControler):
+	for object in bpy.data.objects:
+		if isEndElement(object):
+			return object
+	return None
+	
+def isEndElement(object):
+	return hasPrefix(object.name, endElementPrefix) and isFlareControler(object.parent)
+	
+	
+	
 # interface
+##################################
 
 class LensFlarePanel(bpy.types.Panel):
 	bl_space_type = "VIEW_3D"
@@ -313,7 +350,9 @@ class LensFlarePanel(bpy.types.Panel):
 		layout.operator("lens_flares.new_lens_flare")
 		
 		
+		
 # operators
+###################################
 		
 class NewLensFlare(bpy.types.Operator):
 	bl_idname = "lens_flares.new_lens_flare"
@@ -324,14 +363,10 @@ class NewLensFlare(bpy.types.Operator):
 		newLensFlare()
 		return{"FINISHED"}
 		
-# @persistent
-# def frameChangeHandler(scene):
-	# print(scene)
-	# frame = scene.frame_current
-	# newText(location = [getRandom(-10, 10), getRandom(-10, 10), getRandom(-10, 10)], text = str(frame))		
-# bpy.app.handlers.frame_change_post.append(frameChangeHandler)	
-
-#registration
+		
+		
+# register
+##################################
 
 def register():
 	bpy.utils.register_module(__name__)
