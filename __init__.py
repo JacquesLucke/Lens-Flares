@@ -84,6 +84,9 @@ def newLensFlare():
 	
 	startElement = newStartElement(flareControler, camera, startDistanceCalculator)
 	endElement = newEndElement(flareControler, startElement, center, camera)
+	
+	angleCalculator.hide = True
+	startDistanceCalculator.hide = True
 
 # center creation	
 
@@ -105,6 +108,7 @@ def newCenterEmpty(camera):
 	center = newEmpty(name = cameraCenterPrefix, type = "SPHERE")
 	setParentWithoutInverse(center, camera)
 	center.empty_draw_size = 0.1
+	lockCurrentLocalLocation(center, zAxes = False)
 	linkCenterDistanceToLocation(center, camera, getDofObject(camera))
 	setCameraDirectionProperties(center, camera)
 	return center
@@ -124,6 +128,7 @@ def setCameraDirectionProperties(center, camera):
 def newFlareControler(camera, target, center):
 	flareControler = newEmpty(name = flareControlerPrefix)
 	setParentWithoutInverse(flareControler, camera)	
+	lockCurrentLocalLocation(flareControler)
 	setTargetDirectionProperties(flareControler, target)
 	return flareControler
 	
