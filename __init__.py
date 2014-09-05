@@ -39,7 +39,7 @@ bl_info = {
     "category":    "3D View"
     }
 	
-flareEmptyPrefix = "flare container"
+flareControlerPrefix = "flare controler"
 flareElementPrefix = "flare element"
 positionControlerPrefix = "position controler"
 offsetControlerPrefix = "offset controler"
@@ -134,7 +134,7 @@ def setCameraDirectionProperties(center, camera):
 # flare controler creation	
 
 def newFlareControler(camera, target, center):
-	flareControler = newEmpty()
+	flareControler = newEmpty(name = flareControlerPrefix)
 	setParentWithoutInverse(flareControler, camera)	
 	setTargetDirectionProperties(flareControler, target)
 	setTargetAngleProperty(flareControler, camera, center)
@@ -228,7 +228,7 @@ def setEndLocationDrivers(endElement, startElement, center, constraint):
 	
 def newFlareElement():
 	image = getImage(imagePath)
-	flareEmpty = getFlareEmpty()
+	flareEmpty = getActiveFlareControler()
 	
 	positionControler = newPositionControler()
 	offsetControler = newOffsetControler()
@@ -288,15 +288,19 @@ def newCyclesFlareMaterial(image):
 	
 # utils
 ################################
+
+def isFlareControlerActive():
+	return getActiveFlareControler() is not None
 	
-def getActiveFlareEmpty():
+def getActiveFlareControler():
 	active = getActive()
 	if isFlareControler(active): return active
 	else: return None
 
 def isFlareControler(object):
-	if hasPrefix(object.name, flareEmptyPrefix):
-		return True
+	if object is not None:
+		if hasPrefix(object.name, flareControlerPrefix):
+			return True
 	return False
 	
 def getCameraFromFlareControler(flareControler):
@@ -348,6 +352,7 @@ class LensFlarePanel(bpy.types.Panel):
 	def draw(self, context):
 		layout = self.layout		
 		layout.operator("lens_flares.new_lens_flare")
+		layout.operator("lens_flares.new_flare_element")
 		
 		
 		
@@ -357,10 +362,23 @@ class LensFlarePanel(bpy.types.Panel):
 class NewLensFlare(bpy.types.Operator):
 	bl_idname = "lens_flares.new_lens_flare"
 	bl_label = "New Lens Flare"
-	bl_description = "Create new Lens Flare"
+	bl_description = "Create a new Lens Flare."
 	
 	def execute(self, context):
 		newLensFlare()
+		return{"FINISHED"}
+		
+class NewFlareElement(bpy.types.Operator):
+	bl_idname = "lens_flares.new_flare_element"
+	bl_label = "New Flare Element"
+	bl_description = "Create a new Element in active Lens Flare."
+	
+	@classmethod
+	def poll(self, context):
+		return isFlareControlerActive()
+	
+	def execute(self, context):
+		newFlareElement()
 		return{"FINISHED"}
 		
 		
