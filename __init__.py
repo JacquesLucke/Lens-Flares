@@ -22,6 +22,11 @@ import sys, os, bpy, mathutils
 from bpy.app.handlers import persistent
 sys.path.append(os.path.dirname(__file__)) 
 from lens_flare_utils import *
+from lens_flare_create_object_utils import *
+from lens_flare_constraint_utils import *
+from lens_flare_driver_utils import *
+from lens_flare_animation_utils import *
+from lens_flare_material_and_node_utils import *
 
 
 bl_info = {
