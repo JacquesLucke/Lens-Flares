@@ -18,7 +18,7 @@ Created by Jacques Lucke
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import sys, os, bpy, mathutils
+import sys, os, bpy, mathutils, inspect
 from bpy.app.handlers import persistent
 sys.path.append(os.path.dirname(__file__)) 
 from lens_flare_utils import *
@@ -70,15 +70,11 @@ randomOffsetPath = getDataPath(randomOffsetName)
 elementPositionPath = getDataPath(elementPositionName)
 planeWidthFactorPath = getDataPath(planeWidthFactorName)
 
-#temporary
-imagePath = "F:\Content\Texturen\Lens Flares u. ä\Lens Flares\SpotLight.png"
 
 # new lens flare
 ###################################
 
 def newLensFlare():
-	image = getImage(imagePath)
-	
 	target = getActive()
 	camera = getActiveCamera()
 	center = getCenterEmpty(camera)
@@ -286,6 +282,7 @@ def setEndLocationDrivers(endElement, startElement, center):
 #########################################
 	
 def newFlareElement():
+	imagePath = inspect.getfile(inspect.currentframe())[0:-len("__init__.py")] + "elements/circle.jpg"
 	image = getImage(imagePath)
 	flareControler = getActiveFlareControler()
 	camera = getCameraFromFlareControler(flareControler)
