@@ -78,10 +78,9 @@ def newLensFlare():
 	
 	target = getActive()
 	camera = getActiveCamera()
-	cameraDirectionCalculator = getCameraDirectionCalculator(camera)
 	center = getCenterEmpty(camera)
 	flareControler = newFlareControler(camera, target, center)	
-	angleCalculator = newAngleCalculator(flareControler, camera, target, center, cameraDirectionCalculator)
+	angleCalculator = newAngleCalculator(flareControler, camera, target, center)
 	startDistanceCalculator = newStartDistanceCalculator(flareControler, angleCalculator, center, camera)
 	
 	startElement = newStartElement(flareControler, camera, startDistanceCalculator)
@@ -185,10 +184,10 @@ def setTargetDirectionProperties(flareControler, target):
 	
 # angle calculator
 
-def newAngleCalculator(flareControler, camera, target, center, cameraDirectionCalculator):
+def newAngleCalculator(flareControler, camera, target, center):
 	angleCalculator = newEmpty(name = angleCalculatorPrefix)
 	setParentWithoutInverse(angleCalculator, flareControler)
-	setTargetAngleProperty(angleCalculator, flareControler, cameraDirectionCalculator)
+	setTargetAngleProperty(angleCalculator, flareControler, getCameraDirectionCalculator(camera))
 	return angleCalculator
 	
 def setTargetAngleProperty(angleCalculator, flareControler, cameraDirectionCalculator):
