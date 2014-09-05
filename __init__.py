@@ -43,12 +43,10 @@ flareControlerPrefix = "flare controler"
 angleCalculatorPrefix = "angle calculator"
 startDistanceCalculatorPrefix = "start distance calculator"
 flareElementPrefix = "flare element"
-positionControlerPrefix = "position controler"
-offsetControlerPrefix = "offset controler"
-
 cameraCenterPrefix = "center of camera"
 startElementPrefix = "start element"
 endElementPrefix = "end element"
+
 dofDistanceName = "dof distance"
 plainDistanceName = "plane distance"
 directionXName = "direction x"
