@@ -47,9 +47,6 @@ offsetControlerPrefix = "offset controler"
 cameraCenterPrefix = "center of camera"
 startElementPrefix = "start element"
 endElementPrefix = "end element"
-worldXName = "world x"
-worldYName = "world y"
-worldZName = "world z"
 dofDistanceName = "dof distance"
 plainDistanceName = "plane distance"
 directionXName = "direction x"
@@ -60,9 +57,6 @@ startDistanceName = "start distance"
 randomOffsetName = "random offset"
 elementPositionName = "element position"
 
-worldXPath = getDataPath(worldXName)
-worldYPath = getDataPath(worldYName)
-worldZPath = getDataPath(worldZName)
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
 directionXPath = getDataPath(directionXName)
@@ -109,16 +103,10 @@ def newCenterEmpty(camera):
 	center = newEmpty(name = cameraCenterPrefix, type = "SPHERE")
 	setParentWithoutInverse(center, camera)
 	center.empty_draw_size = 0.1
-	setWorldLocationProperties(center)
 	setDistanceProperty(center, dofDistanceName, camera, getDofObject(camera))
 	linkCenterDistanceToLocation(center)
 	setCameraDirectionProperties(center, camera)
 	return center
-	
-def setWorldLocationProperties(object):
-	setWorldTransformAsProperty(object, worldXName, "LOC_X")
-	setWorldTransformAsProperty(object, worldYName, "LOC_Y")
-	setWorldTransformAsProperty(object, worldZName, "LOC_Z")
 	
 def setDistanceProperty(target, propertyName, object1, object2):
 	setCustomProperty(target, propertyName, 4.0)
