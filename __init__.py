@@ -67,7 +67,6 @@ randomOffsetPath = getDataPath(randomOffsetName)
 elementPositionPath = getDataPath(elementPositionName)
 
 #temporary
-plainDistance = 4	
 imagePath = "F:\Content\Texturen\Lens Flares u. ä\Lens Flares\SpotLight.png"
 
 # new lens flare
