@@ -18,7 +18,8 @@ Created by Jacques Lucke
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import sys, os, bpy
+import sys, os, bpy, mathutils
+from bpy.app.handlers import persistent
 sys.path.append(os.path.dirname(__file__)) 
 from lens_flare_utils import *
 
@@ -37,21 +38,61 @@ flareEmptyPrefix = "flare container"
 flareElementPrefix = "flare element"
 positionControlerPrefix = "position controler"
 offsetControlerPrefix = "offset controler"
-	
+
+cameraCenterPrefix = "center of camera"
+worldXName = "world x"
+worldYName = "world y"
+worldZName = "world z"
+distanceName = "dof distance"
+
+worldXPath = getDataPathFromPropertyName(worldXName)
+worldYPath = getDataPathFromPropertyName(worldYName)
+worldZPath = getDataPathFromPropertyName(worldZName)
+distancePath = getDataPathFromPropertyName(distanceName)
+
+#temporary
+plainDistance = 4	
 imagePath = "F:\Content\Texturen\Lens Flares u. ä\Lens Flares\SpotLight.png"
+
 	
 def newLensFlare():
 	image = getImage(imagePath)
+	
+	target = getActive()
 	camera = getActiveCamera()
-	flareEmpty = newFlareEmpty()
+	center = getCenterEmpty(camera)
+	flareControler = newFlareControler(camera)	
 	
-	setParentWithoutInverse(flareEmpty, camera)
+def newFlareControler(camera):
+	flareControler = newEmpty()
+	setCustomProperty(flareControler, distanceName, 4.0)
+	driver = newDriver(flareControler, distancePath, type = "SUM")
+	linkDistanceToDriver(driver, "var", camera, getDofObject(camera))
+	setParentWithoutInverse(flareControler, camera)	
 	
-	newFlareElement()
-	
-def newFlareEmpty():
-	flareEmpty = newEmpty(flareEmptyPrefix, type = "CIRCLE")
-	return flareEmpty
+def getCenterEmpty(camera):
+	centers = getCenterEmpties()
+	for center in centers:
+		if center.parent == camera:
+			return center
+	return newCenterEmpty(camera)
+def getCenterEmpties():
+	centers = []
+	for object in bpy.data.objects:
+		if hasPrefix(object.name, cameraCenterPrefix):
+			centers.append(object)
+	return centers
+def newCenterEmpty(camera):
+	center = newEmpty(name = cameraCenterPrefix, type = "SPHERE")
+	setParentWithoutInverse(center, camera)
+	center.location.z = -plainDistance
+	center.empty_draw_size = 0.1
+	setWorldLocationProperties(center)
+	return center
+def setWorldLocationProperties(object):
+	setWorldTransformAsProperty(object, worldXName, "LOC_X")
+	setWorldTransformAsProperty(object, worldYName, "LOC_Y")
+	setWorldTransformAsProperty(object, worldZName, "LOC_Z")
 	
 def newFlareElement():
 	image = getImage(imagePath)
@@ -144,7 +185,12 @@ class NewLensFlare(bpy.types.Operator):
 		newLensFlare()
 		return{"FINISHED"}
 		
-			
+# @persistent
+# def frameChangeHandler(scene):
+	# print(scene)
+	# frame = scene.frame_current
+	# newText(location = [getRandom(-10, 10), getRandom(-10, 10), getRandom(-10, 10)], text = str(frame))		
+# bpy.app.handlers.frame_change_post.append(frameChangeHandler)	
 
 #registration
 

@@ -18,7 +18,7 @@ Created by Jacques Lucke
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import bpy, random
+import bpy, random, math, mathutils
 from bpy_extras.image_utils import load_image
 
 def newEmpty(name = "Empty", location = [0, 0, 0], hide = False, type = "PLAIN_AXES"):
@@ -72,7 +72,7 @@ def setParentWithoutInverse(child, parent):
 	setActive(parent)
 	bpy.ops.object.parent_no_inverse_set()
 	
-def setCustomProperty(object, propertyName, value, min = -1000000.0, max = 1000000.0, description = ""):
+def setCustomProperty(object, propertyName, value = 0, min = -1000000.0, max = 1000000.0, description = ""):
 	object[propertyName] = value
 	insertPropertyParameters(object, propertyName, min, max, description)
 def insertPropertyParameters(object, propertyName, min, max, description):
@@ -93,6 +93,10 @@ def createCopyValueDriver(fromObject, fromPath, toObject, toPath):
 	driver = newDriver(toObject, toPath)
 	linkFloatPropertyToDriver(driver, "var", fromObject, fromPath)
 	driver.expression = "var"
+def setWorldTransformAsProperty(object, propertyName, transformChannel):
+	setCustomProperty(object, propertyName, 0.0)
+	driver = newDriver(object, getDataPathFromPropertyName(propertyName), type = "SUM")
+	linkTransformChannelToDriver(driver, "var", object, transformChannel)
 
 def linkFloatPropertyToDriver(driver, name, id, dataPath):
 	driverVariable = driver.variables.new()
@@ -106,6 +110,12 @@ def linkTransformChannelToDriver(driver, name, id, transformType):
 	driverVariable.type = "TRANSFORMS"
 	driverVariable.targets[0].id = id
 	driverVariable.targets[0].transform_type = transformType
+def linkDistanceToDriver(driver, name, object1, object2):
+	driverVariable = driver.variables.new()
+	driverVariable.name = name
+	driverVariable.type = "LOC_DIFF"
+	driverVariable.targets[0].id = object1
+	driverVariable.targets[1].id = object2
 	
 def deselectAll():
 	bpy.ops.object.select_all(action = "DESELECT")
@@ -133,6 +143,9 @@ def getChildOfConstraintWithName(object, name):
 		constraint = object.constraints.new(type = "CHILD_OF")
 		constraint.name = name
 	return object.constraints[name]
+	
+def getDofObject(camera):
+	return bpy.data.cameras[camera.name].dof_object
 
 def setObjectReference(object, name, target):
 	if isObjectReferenceSet(object, name):
@@ -403,4 +416,14 @@ def makeOnlyVisibleToCamera(object):
 	
 def hasPrefix(name, prefix):
 	return name[:len(prefix)] == prefix
+	
+def getPositionVector(object):
+	return mathutils.Vector(object.location)
+def getTranslationMatrix(location):
+	return mathutils.Matrix.Translation(location)
+def getRotationMatrix(rotation):
+	xRotation = mathutils.Matrix.Rotation(rotation.x, 4, 'X')
+	yRotation = mathutils.Matrix.Rotation(rotation.y, 4, 'Y')
+	zRotation = mathutils.Matrix.Rotation(rotation.z, 4, 'Z')
+	return xRotation * yRotation * zRotation
 					
