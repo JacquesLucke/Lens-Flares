@@ -110,6 +110,7 @@ def newCameraDirectionCalculator(camera):
 	calculator = newEmpty(name = cameraDirectionCalculatorPrefix)
 	setParentWithoutInverse(calculator, camera)
 	calculator.location.z = -1
+	lockCurrentLocalLocation(calculator)
 	setCameraDirectionProperties(calculator, camera)
 	return calculator
 	
