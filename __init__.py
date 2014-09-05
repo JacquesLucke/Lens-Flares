@@ -61,6 +61,7 @@ elementPositionName = "element position"
 planeWidthFactorName = "width factor"
 scaleXName = "scale x"
 scaleYName = "scale y"
+trackToCenterInfluenceName = "track to center influence"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -73,6 +74,7 @@ elementPositionPath = getDataPath(elementPositionName)
 planeWidthFactorPath = getDataPath(planeWidthFactorName)
 scaleXPath = getDataPath(scaleXName)
 scaleYPath = getDataPath(scaleYName)
+trackToCenterInfluencePath = getDataPath(trackToCenterInfluenceName)
 
 
 # new lens flare
@@ -290,6 +292,7 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	setCustomProperty(dataEmpty, elementPositionName, 0.2)
 	setCustomProperty(dataEmpty, scaleXName, 1.0)
 	setCustomProperty(dataEmpty, scaleYName, 1.0)
+	setCustomProperty(dataEmpty, trackToCenterInfluenceName, 0.0, min = 0.0, max = 1.0)
 	
 	constraint = dataEmpty.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
@@ -347,6 +350,14 @@ def newFlareElementPlane(image, elementData, camera):
 		linkDistanceToDriver(driver, "distance", plane, camera)
 		driver.expression = "distance / 1"
 	
+	constraint = plane.constraints.new(type = "TRACK_TO")
+	constraint.target = getCenterEmpty(camera)
+	constraint.track_axis = "TRACK_X"
+	constraint.use_target_z = True
+	constraintPath = 'constraints["' + constraint.name + '"]'
+	driver = newDriver(plane, constraintPath + ".influence", type = "SUM")
+	linkFloatPropertyToDriver(driver, "var", elementData, trackToCenterInfluencePath)
+	
 	return plane
 	
 def newCyclesFlareMaterial(image):
@@ -395,13 +406,6 @@ def isFlareControler(object):
 	
 def getCameraFromFlareControler(flareControler):
 	return flareControler.parent
-	
-def getCenterFromCamera(camera):
-	for object in bpy.data.objects:
-		if isCenterEmpty(object):
-			if getCameraFromCenter(object) == camera:
-				return True
-	return False
 
 def isCenterEmpty(object):
 	return hasPrefix(object.name, cameraCenterPrefix) and isCameraObject(object.parent)
