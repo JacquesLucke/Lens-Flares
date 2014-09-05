@@ -144,28 +144,10 @@ def setCenterDistance(center, camera):
 	dof = getDofObject(camera)
 	directionCalculator = getCameraDirectionCalculator(camera)
 	
-	constraint = center.constraints.new(type = "LIMIT_LOCATION")
-	setUseMinMaxToTrue(constraint)
-	constraintPath = 'constraints["' + constraint.name + '"]'
-	
-	for val in [".min", ".max"]:
-		driver = newDriver(center, constraintPath + val + "_x")
-		linkFloatPropertyToDriver(driver, "direction", directionCalculator, directionXPath)
-		linkDistanceToDriver(driver, "distance", camera, dof)
-		linkTransformChannelToDriver(driver, "cam", camera, "LOC_X")
-		driver.expression = "-direction*distance+cam"
-		
-		driver = newDriver(center, constraintPath + val + "_y")
-		linkFloatPropertyToDriver(driver, "direction", directionCalculator, directionYPath)
-		linkDistanceToDriver(driver, "distance", camera, dof)
-		linkTransformChannelToDriver(driver, "cam", camera, "LOC_Y")
-		driver.expression = "-direction*distance+cam"
-		
-		driver = newDriver(center, constraintPath + val + "_z")
-		linkFloatPropertyToDriver(driver, "direction", directionCalculator, directionZPath)
-		linkDistanceToDriver(driver, "distance", camera, dof)
-		linkTransformChannelToDriver(driver, "cam", camera, "LOC_Z")
-		driver.expression = "-direction*distance+cam"
+	driver = newDriver(center, "location", index = 2)
+	linkDistanceToDriver(driver, "distance", camera, dof)
+	linkTransformChannelToDriver(driver, "scale", camera, "SCALE_Z")
+	driver.expression = "-distance/scale"
 	
 # flare controler creation	
 
