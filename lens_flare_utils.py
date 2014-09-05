@@ -113,12 +113,13 @@ def linkFloatPropertyToDriver(driver, name, id, dataPath):
 	driverVariable.type = "SINGLE_PROP"
 	driverVariable.targets[0].id = id
 	driverVariable.targets[0].data_path = dataPath
-def linkTransformChannelToDriver(driver, name, id, transformType):
+def linkTransformChannelToDriver(driver, name, id, transformType, space = "WORLD_SPACE"):
 	driverVariable = driver.variables.new()
 	driverVariable.name = name
 	driverVariable.type = "TRANSFORMS"
 	driverVariable.targets[0].id = id
 	driverVariable.targets[0].transform_type = transformType
+	driverVariable.targets[0].transform_space = space
 def linkDistanceToDriver(driver, name, object1, object2):
 	driverVariable = driver.variables.new()
 	driverVariable.name = name
