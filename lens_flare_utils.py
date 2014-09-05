@@ -400,4 +400,7 @@ def makeOnlyVisibleToCamera(object):
 	object.cycles_visibility.diffuse = False
 	object.cycles_visibility.shadow = False
 	object.cycles_visibility.transmission = False
+	
+def hasPrefix(name, prefix):
+	return name[:len(prefix)] == prefix
 					

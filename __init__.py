@@ -33,19 +33,54 @@ bl_info = {
     "category":    "3D View"
     }
 	
-flareElementName = "flare element"
+flareEmptyPrefix = "flare container"
+flareElementPrefix = "flare element"
+positionControlerPrefix = "position controler"
+offsetControlerPrefix = "offset controler"
 	
 imagePath = "F:\Content\Texturen\Lens Flares u. ä\Lens Flares\SpotLight.png"
 	
 def newLensFlare():
 	image = getImage(imagePath)
-	plane = newFlareElementPlane(image)
+	camera = getActiveCamera()
+	flareEmpty = newFlareEmpty()
+	
+	setParentWithoutInverse(flareEmpty, camera)
+	
+	newFlareElement()
+	
+def newFlareEmpty():
+	flareEmpty = newEmpty(flareEmptyPrefix, type = "CIRCLE")
+	return flareEmpty
+	
+def newFlareElement():
+	image = getImage(imagePath)
+	flareEmpty = getFlareEmpty()
+	
+	positionControler = newPositionControler()
+	offsetControler = newOffsetControler()
+	plain = newFlareElementPlane(image)
+	
+	setParentWithoutInverse(positionControler, flareEmpty)
+	setParentWithoutInverse(offsetControler, positionControler)
+	setParentWithoutInverse(plain, offsetControler)
+	
+	offsetControler.location.z = -1
+	plain.location.z = getRandom(-0.01, 0.01)
+	
+def newPositionControler():
+	positionControler = newEmpty(name = positionControlerPrefix)
+	positionControler.empty_draw_size = 0.2
+	return positionControler
+	
+def newOffsetControler():
+	offsetControler = newEmpty(name = offsetControlerPrefix)
+	offsetControler.empty_draw_size = 0.2014
+	return offsetControler
 	
 def newFlareElementPlane(image):
-	plane = newPlane(name = flareElementName, size = 0.1)
+	plane = newPlane(name = flareElementPrefix, size = 0.1)
 	plane.scale.x = image.size[0] / image.size[1]
-	setParentWithoutInverse(plane, getActiveCamera())
-	plane.location.z = -1 + getRandom(-0.01, 0.01)
 	makeOnlyVisibleToCamera(plane)
 	material = newCyclesFlareMaterial(image)
 	setMaterialOnObject(plane, material)
@@ -76,6 +111,13 @@ def newCyclesFlareMaterial(image):
 	newNodeLink(nodeTree, mixShader.outputs[0], output.inputs[0])
 	return material
 	
+	
+def getFlareEmpty():
+	for object in bpy.data.objects:
+		print(object.name)
+		if hasPrefix(object.name, flareEmptyPrefix):
+			return object
+	return None
 	
 # interface
 
