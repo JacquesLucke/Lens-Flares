@@ -59,6 +59,8 @@ startDistanceName = "start distance"
 randomOffsetName = "random offset"
 elementPositionName = "element position"
 planeWidthFactorName = "width factor"
+scaleXName = "scale x"
+scaleYName = "scale y"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -69,6 +71,8 @@ dofDistancePath = getDataPath(dofDistanceName)
 randomOffsetPath = getDataPath(randomOffsetName)
 elementPositionPath = getDataPath(elementPositionName)
 planeWidthFactorPath = getDataPath(planeWidthFactorName)
+scaleXPath = getDataPath(scaleXName)
+scaleYPath = getDataPath(scaleYName)
 
 
 # new lens flare
@@ -284,6 +288,8 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	setParentWithoutInverse(dataEmpty, flareControler)
 	setCustomProperty(dataEmpty, randomOffsetName, getRandom(-0.01, 0.01))
 	setCustomProperty(dataEmpty, elementPositionName, 0.2)
+	setCustomProperty(dataEmpty, scaleXName, 1.0)
+	setCustomProperty(dataEmpty, scaleYName, 1.0)
 	
 	constraint = dataEmpty.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
@@ -329,11 +335,13 @@ def newFlareElementPlane(image, elementData, camera):
 		driver = newDriver(plane, constraintPath + val + "_x")
 		linkDistanceToDriver(driver, "distance", plane, camera)
 		linkFloatPropertyToDriver(driver, "factor", plane, planeWidthFactorPath)
-		driver.expression = "factor * distance / 1"
+		linkFloatPropertyToDriver(driver, "scale", elementData, scaleXPath)
+		driver.expression = "factor * scale * distance / 1"
 		
 		driver = newDriver(plane, constraintPath + val + "_y")
 		linkDistanceToDriver(driver, "distance", plane, camera)
-		driver.expression = "distance / 1"
+		linkFloatPropertyToDriver(driver, "scale", elementData, scaleYPath)
+		driver.expression = "scale * distance / 1"
 		
 		driver = newDriver(plane, constraintPath + val + "_z")
 		linkDistanceToDriver(driver, "distance", plane, camera)
