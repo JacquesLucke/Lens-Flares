@@ -273,7 +273,7 @@ def setEndLocationDrivers(endElement, startElement, center):
 #########################################
 	
 def newFlareElement():
-	imagePath = inspect.getfile(inspect.currentframe())[0:-len("__init__.py")] + "elements/circle.jpg"
+	imagePath = inspect.getfile(inspect.currentframe())[0:-len("__init__.py")] + "elements/glow1.jpg"
 	image = getImage(imagePath)
 	flareControler = getActiveFlareControler()
 	camera = getCameraFromFlareControler(flareControler)
