@@ -72,7 +72,7 @@ def setParentWithoutInverse(child, parent):
 	setActive(parent)
 	bpy.ops.object.parent_no_inverse_set()
 	
-def setCustomProperty(object, propertyName, value = 0, min = -1000000.0, max = 1000000.0, description = ""):
+def setCustomProperty(object, propertyName, value = 0.0, min = -1000000.0, max = 1000000.0, description = ""):
 	object[propertyName] = value
 	insertPropertyParameters(object, propertyName, min, max, description)
 def insertPropertyParameters(object, propertyName, min, max, description):
@@ -94,9 +94,18 @@ def createCopyValueDriver(fromObject, fromPath, toObject, toPath):
 	linkFloatPropertyToDriver(driver, "var", fromObject, fromPath)
 	driver.expression = "var"
 def setWorldTransformAsProperty(object, propertyName, transformChannel):
-	setCustomProperty(object, propertyName, 0.0)
-	driver = newDriver(object, getDataPathFromPropertyName(propertyName), type = "SUM")
+	setCustomProperty(object, propertyName)
+	driver = newDriver(object, getDataPath(propertyName), type = "SUM")
 	linkTransformChannelToDriver(driver, "var", object, transformChannel)
+def setTransformDifferenceAsProperty(target, relative, propertyName, transformChannel, normalized = False):
+	setCustomProperty(target, propertyName)
+	driver = newDriver(target, getDataPath(propertyName))
+	linkTransformChannelToDriver(driver, "a", relative, transformChannel)
+	linkTransformChannelToDriver(driver, "b", target, transformChannel)
+	if normalized:
+		linkDistanceToDriver(driver, "dis", target, relative)
+		driver.expression = "(a-b)/(dis+0.0000001)"
+	else: driver.expression = "a-b"
 
 def linkFloatPropertyToDriver(driver, name, id, dataPath):
 	driverVariable = driver.variables.new()
@@ -348,7 +357,7 @@ def swapAreaTypes(area1, area2):
 	area1.type = area2.type
 	area2.type = type1
 	
-def getDataPathFromPropertyName(name):
+def getDataPath(name):
 	return '["' + name + '"]'
 	
 def getObjectFromValidIndex(list, index):

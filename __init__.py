@@ -43,12 +43,15 @@ cameraCenterPrefix = "center of camera"
 worldXName = "world x"
 worldYName = "world y"
 worldZName = "world z"
-distanceName = "dof distance"
+dofDistanceName = "dof distance"
+plainDistanceName = "plane distance"
+cameraDirectionXName = "camera direction x"
+cameraDirectionYName = "camera direction y"
+cameraDirectionZName = "camera direction z"
 
-worldXPath = getDataPathFromPropertyName(worldXName)
-worldYPath = getDataPathFromPropertyName(worldYName)
-worldZPath = getDataPathFromPropertyName(worldZName)
-distancePath = getDataPathFromPropertyName(distanceName)
+worldXPath = getDataPath(worldXName)
+worldYPath = getDataPath(worldYName)
+worldZPath = getDataPath(worldZName)
 
 #temporary
 plainDistance = 4	
@@ -61,14 +64,12 @@ def newLensFlare():
 	target = getActive()
 	camera = getActiveCamera()
 	center = getCenterEmpty(camera)
-	flareControler = newFlareControler(camera)	
+	flareControler = newFlareControler(camera, target)	
 	
-def newFlareControler(camera):
+def newFlareControler(camera, target):
 	flareControler = newEmpty()
-	setCustomProperty(flareControler, distanceName, 4.0)
-	driver = newDriver(flareControler, distancePath, type = "SUM")
-	linkDistanceToDriver(driver, "var", camera, getDofObject(camera))
 	setParentWithoutInverse(flareControler, camera)	
+	return flareControler
 	
 def getCenterEmpty(camera):
 	centers = getCenterEmpties()
@@ -85,14 +86,28 @@ def getCenterEmpties():
 def newCenterEmpty(camera):
 	center = newEmpty(name = cameraCenterPrefix, type = "SPHERE")
 	setParentWithoutInverse(center, camera)
-	center.location.z = -plainDistance
 	center.empty_draw_size = 0.1
 	setWorldLocationProperties(center)
+	setDistanceProperty(center, dofDistanceName, camera, getDofObject(camera))
+	driver = newDriver(center, "location", index = 2)
+	linkFloatPropertyToDriver(driver, "var", center, getDataPath(dofDistanceName))
+	driver.expression = "-var"
+	setCameraDirectionProperties(center, camera)
 	return center
 def setWorldLocationProperties(object):
 	setWorldTransformAsProperty(object, worldXName, "LOC_X")
 	setWorldTransformAsProperty(object, worldYName, "LOC_Y")
 	setWorldTransformAsProperty(object, worldZName, "LOC_Z")
+def setDistanceProperty(target, propertyName, object1, object2):
+	setCustomProperty(target, propertyName, 4.0)
+	driver = newDriver(target, getDataPath(propertyName), type = "SUM")
+	linkDistanceToDriver(driver, "var", object1, object2)
+def setCameraDirectionProperties(center, camera):
+	setTransformDifferenceAsProperty(center, camera, cameraDirectionXName, "LOC_X", normalized = True)
+	setTransformDifferenceAsProperty(center, camera, cameraDirectionYName, "LOC_Y", normalized = True)
+	setTransformDifferenceAsProperty(center, camera, cameraDirectionZName, "LOC_Z", normalized = True)
+
+	
 	
 def newFlareElement():
 	image = getImage(imagePath)
@@ -159,6 +174,9 @@ def getFlareEmpty():
 		if hasPrefix(object.name, flareEmptyPrefix):
 			return object
 	return None
+	
+def getCameraFromFlareControler(flareControler):
+	return flareControler.parent
 	
 # interface
 
