@@ -139,7 +139,10 @@ def newCenterEmpty(camera):
 	center = newEmpty(name = cameraCenterPrefix, type = "SPHERE")
 	setParentWithoutInverse(center, camera)
 	center.empty_draw_size = 0.1
+	setCenterDistance(center, camera)
+	return center
 	
+def setCenterDistance(center, camera):
 	dof = getDofObject(camera)
 	directionCalculator = getCameraDirectionCalculator(camera)
 	
@@ -165,9 +168,6 @@ def newCenterEmpty(camera):
 		linkDistanceToDriver(driver, "distance", camera, dof)
 		linkTransformChannelToDriver(driver, "cam", camera, "LOC_Z")
 		driver.expression = "-direction*distance+cam"
-	
-	return center
-	
 	
 # flare controler creation	
 
