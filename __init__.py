@@ -65,12 +65,15 @@ startDistancePath = getDataPath(startDistanceName)
 directionXPath = getDataPath(directionXName)
 directionYPath = getDataPath(directionYName)
 directionZPath = getDataPath(directionZName)
+dofDistancePath = getDataPath(dofDistanceName)
 
 #temporary
 plainDistance = 4	
 imagePath = "F:\Content\Texturen\Lens Flares u. ä\Lens Flares\SpotLight.png"
 
-	
+# new lens flare
+###################################
+
 def newLensFlare():
 	image = getImage(imagePath)
 	
@@ -79,7 +82,55 @@ def newLensFlare():
 	center = getCenterEmpty(camera)
 	flareControler = newFlareControler(camera, target, center)	
 	startElement = newStartElement(flareControler, camera)
+
+# center creation	
+
+def getCenterEmpty(camera):
+	centers = getCenterEmpties()
+	for center in centers:
+		if center.parent == camera:
+			return center
+	return newCenterEmpty(camera)
 	
+def getCenterEmpties():
+	centers = []
+	for object in bpy.data.objects:
+		if hasPrefix(object.name, cameraCenterPrefix):
+			centers.append(object)
+	return centers
+	
+def newCenterEmpty(camera):
+	center = newEmpty(name = cameraCenterPrefix, type = "SPHERE")
+	setParentWithoutInverse(center, camera)
+	center.empty_draw_size = 0.1
+	setWorldLocationProperties(center)
+	setDistanceProperty(center, dofDistanceName, camera, getDofObject(camera))
+	linkCenterDistanceToLocation(center)
+	setCameraDirectionProperties(center, camera)
+	return center
+	
+def setWorldLocationProperties(object):
+	setWorldTransformAsProperty(object, worldXName, "LOC_X")
+	setWorldTransformAsProperty(object, worldYName, "LOC_Y")
+	setWorldTransformAsProperty(object, worldZName, "LOC_Z")
+	
+def setDistanceProperty(target, propertyName, object1, object2):
+	setCustomProperty(target, propertyName, 4.0)
+	driver = newDriver(target, getDataPath(propertyName), type = "SUM")
+	linkDistanceToDriver(driver, "var", object1, object2)
+	
+def linkCenterDistanceToLocation(center):
+	driver = newDriver(center, "location", index = 2)
+	linkFloatPropertyToDriver(driver, "var", center, dofDistancePath)
+	driver.expression = "-var"
+	
+def setCameraDirectionProperties(center, camera):
+	setTransformDifferenceAsProperty(center, camera, directionXName, "LOC_X", normalized = True)
+	setTransformDifferenceAsProperty(center, camera, directionYName, "LOC_Y", normalized = True)
+	setTransformDifferenceAsProperty(center, camera, directionZName, "LOC_Z", normalized = True)
+	
+# flare controler creation	
+
 def newFlareControler(camera, target, center):
 	flareControler = newEmpty()
 	setParentWithoutInverse(flareControler, camera)	
@@ -87,10 +138,12 @@ def newFlareControler(camera, target, center):
 	setTargetAngleProperty(flareControler, camera, center)
 	setStartDistanceProperty(flareControler, center)
 	return flareControler
+	
 def setTargetDirectionProperties(flareControler, target):
 	setTransformDifferenceAsProperty(flareControler, target, directionXName, "LOC_X", normalized = True)
 	setTransformDifferenceAsProperty(flareControler, target, directionYName, "LOC_Y", normalized = True)
 	setTransformDifferenceAsProperty(flareControler, target, directionZName, "LOC_Z", normalized = True)
+	
 def setTargetAngleProperty(flareControler, camera, center):
 	setCustomProperty(flareControler, angleName)
 	driver = newDriver(flareControler, anglePath)
@@ -101,17 +154,23 @@ def setTargetAngleProperty(flareControler, camera, center):
 	linkFloatPropertyToDriver(driver, "y2", center, getDataPath(directionYName))
 	linkFloatPropertyToDriver(driver, "z2", center, getDataPath(directionZName))
 	driver.expression = "degrees(acos(x1*x2+y1*y2+z1*z2))"
+	
 def setStartDistanceProperty(flareControler, center):
 	setCustomProperty(flareControler, startDistanceName)
 	driver = newDriver(flareControler, startDistancePath)
 	linkTransformChannelToDriver(driver, "plainDistance", center, "LOC_Z", space = "LOCAL_SPACE")
 	linkFloatPropertyToDriver(driver, "angle", flareControler, anglePath)
 	driver.expression = "plainDistance/cos(radians(angle))"
+
+# start element creation
 	
 def newStartElement(flareControler, camera):
 	startElement = newEmpty(name = startElementPrefix)
 	setParentWithoutInverse(startElement, flareControler)
 	constraint = newLinkedLimitLocationConstraint(startElement)
+	setStartLocationDrivers(startElement, camera, flareControler, constraint)
+	
+def setStartLocationDrivers(startElement, camera, flareControler, constraint):
 	constraintPath = 'constraints["' + constraint.name + '"]'
 	
 	driver = newDriver(startElement, constraintPath + ".min_x")
@@ -132,43 +191,9 @@ def newStartElement(flareControler, camera):
 	linkTransformChannelToDriver(driver, "cam", camera, "LOC_Z")
 	driver.expression = "direction*distance+cam"
 	
-def getCenterEmpty(camera):
-	centers = getCenterEmpties()
-	for center in centers:
-		if center.parent == camera:
-			return center
-	return newCenterEmpty(camera)
-def getCenterEmpties():
-	centers = []
-	for object in bpy.data.objects:
-		if hasPrefix(object.name, cameraCenterPrefix):
-			centers.append(object)
-	return centers
-def newCenterEmpty(camera):
-	center = newEmpty(name = cameraCenterPrefix, type = "SPHERE")
-	setParentWithoutInverse(center, camera)
-	center.empty_draw_size = 0.1
-	setWorldLocationProperties(center)
-	setDistanceProperty(center, dofDistanceName, camera, getDofObject(camera))
-	driver = newDriver(center, "location", index = 2)
-	linkFloatPropertyToDriver(driver, "var", center, getDataPath(dofDistanceName))
-	driver.expression = "-var"
-	setCameraDirectionProperties(center, camera)
-	return center
-def setWorldLocationProperties(object):
-	setWorldTransformAsProperty(object, worldXName, "LOC_X")
-	setWorldTransformAsProperty(object, worldYName, "LOC_Y")
-	setWorldTransformAsProperty(object, worldZName, "LOC_Z")
-def setDistanceProperty(target, propertyName, object1, object2):
-	setCustomProperty(target, propertyName, 4.0)
-	driver = newDriver(target, getDataPath(propertyName), type = "SUM")
-	linkDistanceToDriver(driver, "var", object1, object2)
-def setCameraDirectionProperties(center, camera):
-	setTransformDifferenceAsProperty(center, camera, directionXName, "LOC_X", normalized = True)
-	setTransformDifferenceAsProperty(center, camera, directionYName, "LOC_Y", normalized = True)
-	setTransformDifferenceAsProperty(center, camera, directionZName, "LOC_Z", normalized = True)
 
-	
+# new element
+#########################################
 	
 def newFlareElement():
 	image = getImage(imagePath)
@@ -228,6 +253,10 @@ def newCyclesFlareMaterial(image):
 	newNodeLink(nodeTree, mixShader.outputs[0], output.inputs[0])
 	return material
 	
+	
+	
+# utils
+################################
 	
 def getFlareEmpty():
 	for object in bpy.data.objects:
