@@ -57,6 +57,8 @@ directionYName = "direction y"
 directionZName = "direction z"
 angleName = "angle"
 startDistanceName = "start distance"
+randomOffsetName = "random offset"
+elementPositionName = "element position"
 
 worldXPath = getDataPath(worldXName)
 worldYPath = getDataPath(worldYName)
@@ -67,6 +69,8 @@ directionXPath = getDataPath(directionXName)
 directionYPath = getDataPath(directionYName)
 directionZPath = getDataPath(directionZName)
 dofDistancePath = getDataPath(dofDistanceName)
+randomOffsetPath = getDataPath(randomOffsetName)
+elementPositionPath = getDataPath(elementPositionName)
 
 #temporary
 plainDistance = 4	
@@ -228,29 +232,40 @@ def setEndLocationDrivers(endElement, startElement, center, constraint):
 	
 def newFlareElement():
 	image = getImage(imagePath)
-	flareEmpty = getActiveFlareControler()
+	flareControler = getActiveFlareControler()
+	startElement = getStartElement(flareControler)
+	endElement = getEndElement(flareControler)
 	
-	positionControler = newPositionControler()
-	offsetControler = newOffsetControler()
-	plain = newFlareElementPlane(image)
+	flareElement = newFlareElementPlane(image)	
+	setParentWithoutInverse(flareElement, flareControler)
+	setCustomProperty(flareElement, randomOffsetName, getRandom(-0.01, 0.01))
+	setCustomProperty(flareElement, elementPositionName, 0.2)
 	
-	setParentWithoutInverse(positionControler, flareEmpty)
-	setParentWithoutInverse(offsetControler, positionControler)
-	setParentWithoutInverse(plain, offsetControler)
+	constraint = newLinkedLimitLocationConstraint(flareElement)
+	constraintPath = 'constraints["' + constraint.name + '"]'
 	
-	offsetControler.location.z = -1
-	plain.location.z = getRandom(-0.01, 0.01)
+	driver = newDriver(flareElement, constraintPath + ".min_x")
+	linkTransformChannelToDriver(driver, "start", startElement, "LOC_X")
+	linkTransformChannelToDriver(driver, "end", endElement, "LOC_X")
+	linkFloatPropertyToDriver(driver, "position", flareElement, elementPositionPath)
+	linkFloatPropertyToDriver(driver, "random", flareElement, randomOffsetPath)
+	driver.expression = "start * (1-position) + end * position + random"
 	
-def newPositionControler():
-	positionControler = newEmpty(name = positionControlerPrefix)
-	positionControler.empty_draw_size = 0.2
-	return positionControler
+	driver = newDriver(flareElement, constraintPath + ".min_y")
+	linkTransformChannelToDriver(driver, "start", startElement, "LOC_Y")
+	linkTransformChannelToDriver(driver, "end", endElement, "LOC_Y")
+	linkFloatPropertyToDriver(driver, "position", flareElement, elementPositionPath)
+	linkFloatPropertyToDriver(driver, "random", flareElement, randomOffsetPath)
+	driver.expression = "start * (1-position) + end * position + random"
 	
-def newOffsetControler():
-	offsetControler = newEmpty(name = offsetControlerPrefix)
-	offsetControler.empty_draw_size = 0.2014
-	return offsetControler
+	driver = newDriver(flareElement, constraintPath + ".min_z")
+	linkTransformChannelToDriver(driver, "start", startElement, "LOC_Z")
+	linkTransformChannelToDriver(driver, "end", endElement, "LOC_Z")
+	linkFloatPropertyToDriver(driver, "position", flareElement, elementPositionPath)
+	linkFloatPropertyToDriver(driver, "random", flareElement, randomOffsetPath)
+	driver.expression = "start * (1-position) + end * position + random"
 	
+
 def newFlareElementPlane(image):
 	plane = newPlane(name = flareElementPrefix, size = 0.1)
 	plane.scale.x = image.size[0] / image.size[1]

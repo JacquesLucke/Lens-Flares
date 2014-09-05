@@ -78,6 +78,9 @@ def isTextObject(object):
 			return True
 	return False
 	
+def isCameraObject(object):
+	return hasattr(object, "dof_object")
+	
 def delete(object):
 	deselectAll()
 	object.select = True
