@@ -69,7 +69,12 @@ def newLensFlare():
 def newFlareControler(camera, target):
 	flareControler = newEmpty()
 	setParentWithoutInverse(flareControler, camera)	
+	setTargetDirectionProperties(flareControler, target)
 	return flareControler
+def setTargetDirectionProperties(flareControler, target):
+	setTransformDifferenceAsProperty(flareControler, target, cameraDirectionXName, "LOC_X", normalized = True)
+	setTransformDifferenceAsProperty(flareControler, target, cameraDirectionYName, "LOC_Y", normalized = True)
+	setTransformDifferenceAsProperty(flareControler, target, cameraDirectionZName, "LOC_Z", normalized = True)
 	
 def getCenterEmpty(camera):
 	centers = getCenterEmpties()
