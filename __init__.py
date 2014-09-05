@@ -46,6 +46,7 @@ offsetControlerPrefix = "offset controler"
 
 cameraCenterPrefix = "center of camera"
 startElementPrefix = "start element"
+endElementPrefix = "end element"
 worldXName = "world x"
 worldYName = "world y"
 worldZName = "world z"
@@ -82,6 +83,7 @@ def newLensFlare():
 	center = getCenterEmpty(camera)
 	flareControler = newFlareControler(camera, target, center)	
 	startElement = newStartElement(flareControler, camera)
+	endElement = newEndElement(flareControler, startElement, center, camera)
 
 # center creation	
 
@@ -169,6 +171,7 @@ def newStartElement(flareControler, camera):
 	setParentWithoutInverse(startElement, flareControler)
 	constraint = newLinkedLimitLocationConstraint(startElement)
 	setStartLocationDrivers(startElement, camera, flareControler, constraint)
+	return startElement
 	
 def setStartLocationDrivers(startElement, camera, flareControler, constraint):
 	constraintPath = 'constraints["' + constraint.name + '"]'
@@ -190,6 +193,34 @@ def setStartLocationDrivers(startElement, camera, flareControler, constraint):
 	linkFloatPropertyToDriver(driver, "distance", flareControler, startDistancePath)
 	linkTransformChannelToDriver(driver, "cam", camera, "LOC_Z")
 	driver.expression = "direction*distance+cam"
+	
+# end element creation
+
+def newEndElement(flareControler, startElement, center, camera):
+	endElement = newEmpty(name = endElementPrefix)
+	setParentWithoutInverse(endElement, flareControler)
+	constraint = newLinkedLimitLocationConstraint(endElement)
+	setEndLocationDrivers(endElement, startElement, center, constraint)
+	return endElement
+	
+def setEndLocationDrivers(endElement, startElement, center, constraint):
+	constraintPath = 'constraints["' + constraint.name + '"]'
+
+	driver = newDriver(endElement, constraintPath + ".min_x")
+	linkTransformChannelToDriver(driver, "start", startElement, "LOC_X")
+	linkTransformChannelToDriver(driver, "center", center, "LOC_X")
+	driver.expression = "2*center - start"
+	
+	driver = newDriver(endElement, constraintPath + ".min_y")
+	linkTransformChannelToDriver(driver, "start", startElement, "LOC_Y")
+	linkTransformChannelToDriver(driver, "center", center, "LOC_Y")
+	driver.expression = "2*center - start"
+	
+	driver = newDriver(endElement, constraintPath + ".min_z")
+	linkTransformChannelToDriver(driver, "start", startElement, "LOC_Z")
+	linkTransformChannelToDriver(driver, "center", center, "LOC_Z")
+	driver.expression = "2*center - start"
+	
 	
 
 # new element
