@@ -135,12 +135,12 @@ def setTargetDirectionProperties(flareControler, target):
 def setTargetAngleProperty(flareControler, camera, center):
 	setCustomProperty(flareControler, angleName)
 	driver = newDriver(flareControler, anglePath)
-	linkFloatPropertyToDriver(driver, "x1", flareControler, getDataPath(directionXName))
-	linkFloatPropertyToDriver(driver, "y1", flareControler, getDataPath(directionYName))
-	linkFloatPropertyToDriver(driver, "z1", flareControler, getDataPath(directionZName))	
-	linkFloatPropertyToDriver(driver, "x2", center, getDataPath(directionXName))
-	linkFloatPropertyToDriver(driver, "y2", center, getDataPath(directionYName))
-	linkFloatPropertyToDriver(driver, "z2", center, getDataPath(directionZName))
+	linkFloatPropertyToDriver(driver, "x1", flareControler, directionXPath)
+	linkFloatPropertyToDriver(driver, "y1", flareControler, directionYPath)
+	linkFloatPropertyToDriver(driver, "z1", flareControler, directionZPath)	
+	linkFloatPropertyToDriver(driver, "x2", center, directionXPath)
+	linkFloatPropertyToDriver(driver, "y2", center, directionYPath)
+	linkFloatPropertyToDriver(driver, "z2", center, directionZPath)
 	driver.expression = "degrees(acos(x1*x2+y1*y2+z1*z2))"
 	
 def setStartDistanceProperty(flareControler, center):
