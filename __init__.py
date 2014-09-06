@@ -71,6 +71,7 @@ trackToCenterInfluenceName = "track to center influence"
 intensityNodeName = "intensity"
 intensityName = "intensity"
 imageNodeName = "image node"
+colorMultiplyNodeName = "color multiply node"
 childOfFlarePropertyName = "child of flare"
 targetPropertyName = "flare target"
 cameraOfFlarePropertyName = "camera of this flare"
@@ -457,6 +458,7 @@ def newCyclesFlareMaterial(image):
 	textureCoordinatesNode = newTextureCoordinatesNode(nodeTree)
 	imageNode = newImageTextureNode(nodeTree)
 	colorRamp = newColorRampNode(nodeTree)
+	colorMultiply = newColorMixNode(nodeTree, type = "MULTIPLY", factor = 1.0, default2 = [1.0, 1.0, 1.0, 1.0])
 	rerouteImage = newRerouteNode(nodeTree)
 	toBw = newRgbToBwNode(nodeTree)
 	mixColor = newColorMixNode(nodeTree, type = "DIVIDE", factor = 1.0)
@@ -469,10 +471,12 @@ def newCyclesFlareMaterial(image):
 	imageNode.image = image
 	intensityNode.name = intensityNodeName
 	imageNode.name = imageNodeName
+	colorMultiply.name = colorMultiplyNodeName
 	
 	newNodeLink(nodeTree, textureCoordinatesNode.outputs["Generated"], imageNode.inputs[0])
 	newNodeLink(nodeTree, imageNode.outputs[0], colorRamp.inputs[0])
-	newNodeLink(nodeTree, colorRamp.outputs[0], rerouteImage.inputs[0])
+	newNodeLink(nodeTree, colorRamp.outputs[0], colorMultiply.inputs[1])
+	newNodeLink(nodeTree, colorMultiply.outputs[0], rerouteImage.inputs[0])
 	newNodeLink(nodeTree, rerouteImage.outputs[0], toBw.inputs[0])
 	newNodeLink(nodeTree, rerouteImage.outputs[0], mixColor.inputs[1])
 	newNodeLink(nodeTree, toBw.outputs[0], mixColor.inputs[2])
@@ -664,6 +668,9 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 				col = layout.column(align = True)
 				col.prop(data, scaleXPath, text = "Width")
 				col.prop(data, scaleYPath, text = "Height")
+				
+				plane = getPlaneFromData(data)
+				layout.prop(getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2], "default_value")
 		
 		
 # operators

@@ -49,10 +49,12 @@ def newTransparentNode(nodeTree):
 	return nodeTree.nodes.new("ShaderNodeBsdfTransparent")
 def newMixShader(nodeTree):
 	return nodeTree.nodes.new("ShaderNodeMixShader")
-def newColorMixNode(nodeTree, type = "MIX", factor = 0.5):
+def newColorMixNode(nodeTree, type = "MIX", factor = 0.5, default1 = [0.5, 0.5, 0.5, 1.0], default2 = [0.5, 0.5, 0.5, 1.0]):
 	node = nodeTree.nodes.new("ShaderNodeMixRGB")
 	node.blend_type = type
 	node.inputs[0].default_value = factor
+	node.inputs[1].default_value = default1
+	node.inputs[2].default_value = default2
 	return node
 def newRgbToBwNode(nodeTree):
 	return nodeTree.nodes.new("ShaderNodeRGBToBW")
