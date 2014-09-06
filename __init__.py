@@ -457,12 +457,6 @@ def getSelectedFlareElementDatas():
 			if elementData not in flareElementDatas and elementData is not None:
 				flareElementDatas.append(elementData)
 	return flareElementDatas
-
-def isFlareControler(object):
-	if object is not None:
-		if hasPrefix(object.name, flareControlerPrefix):
-			return True
-	return False
 	
 def getCameraFromFlareControler(flareControler):
 	return flareControler.parent
