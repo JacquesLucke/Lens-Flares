@@ -576,7 +576,7 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 		layout = self.layout
 		
 		flare = getSelectedFlares()[0]
-		self.bl_label = "Settings: " + flare.name
+		self.bl_label = "Settings: " + flare[flareNamePropertyName]
 		
 		layout.prop(flare, flareNamePropertyPath, text = "Name")
 				
@@ -596,7 +596,8 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 		newElement.flareControler = flare.name
 		
 		for data in allDatas:
-			if data.select:
+			if data.select or getPlaneFromData(data).select:
+				layout.separator()
 				layout.prop(data, elementDataNamePropertyPath, text = "Name")
 				layout.prop(data, elementPositionPath, text = "Position")
 				layout.prop(data, trackToCenterInfluencePath, text = "Center Rotation Influence")
