@@ -73,6 +73,7 @@ endElementPropertyName = "end element"
 dataElementPropertyName = "data element"
 elementDataNamesContainerPropertyName = "element data names container"
 elementNamePropertyName = "element name"
+linkToFlareControlerPropertyName = "flare link from target"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -96,7 +97,7 @@ elementNamePropertyPath = getDataPath(elementNamePropertyName)
 def newLensFlare(camera, target):
 	center = getCenterEmpty(camera)
 	flareControler = newFlareControler(camera, target, center)	
-	makePartOfFlareControler(target, flareControler)
+	setCustomProperty(target, linkToFlareControlerPropertyName, flareControler.name)
 	angleCalculator = newAngleCalculator(flareControler, camera, target, center)
 	startDistanceCalculator = newStartDistanceCalculator(flareControler, angleCalculator, center, camera)
 	
@@ -450,7 +451,7 @@ def getSelectedFlares():
 	flareControlers = []
 	selection = getSelectedObjects()
 	for object in selection:
-		if hasFlareControlerAttribute(object):
+		if hasFlareControlerAttribute(object) or hasLinkToFlareControler(object):
 			flareControler = getCorrespondingFlareControler(object)
 			if flareControler not in flareControlers and flareControler is not None:
 				flareControlers.append(flareControler)
@@ -484,9 +485,12 @@ def getElementDataNamesContainer(flareControler):
 def makePartOfFlareControler(object, flareControler):
 	setCustomProperty(object, childOfFlarePropertyName, flareControler.name)
 def getCorrespondingFlareControler(object):
-	return bpy.data.objects.get(object[childOfFlarePropertyName])
+	if hasFlareControlerAttribute(object): return bpy.data.objects.get(object[childOfFlarePropertyName])
+	if hasLinkToFlareControler(object): return bpy.data.objects.get(object[linkToFlareControlerPropertyName])
 def hasFlareControlerAttribute(object):
 	return childOfFlarePropertyName in object
+def hasLinkToFlareControler(object):
+	return linkToFlareControlerPropertyName in object
 	
 def makePartOfFlareElement(object, dataElement):
 	setCustomProperty(object, dataElementPropertyName, dataElement.name)
