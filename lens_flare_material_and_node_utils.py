@@ -62,6 +62,10 @@ def newMathNode(nodeTree, type = "MIX", default = 0.5):
 	node.inputs[0].default_value = default
 	node.inputs[1].default_value = default
 	return node
+def newRerouteNode(nodeTree):
+	return nodeTree.nodes.new("NodeReroute")
+def newColorRampNode(nodeTree):
+	return nodeTree.nodes.new("ShaderNodeValToRGB")
 	
 def linkToMixShader(nodeTree, socket1, socket2, mixShader, factor = None):
 	if factor is not None: newNodeLink(nodeTree, mixShader.inputs[0], factor)

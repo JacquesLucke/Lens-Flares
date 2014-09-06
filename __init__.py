@@ -374,6 +374,8 @@ def newCyclesFlareMaterial(image):
 	nodeTree = material.node_tree
 	textureCoordinatesNode = newTextureCoordinatesNode(nodeTree)
 	imageNode = newImageTextureNode(nodeTree)
+	colorRamp = newColorRampNode(nodeTree)
+	rerouteImage = newRerouteNode(nodeTree)
 	toBw = newRgbToBwNode(nodeTree)
 	mixColor = newColorMixNode(nodeTree, type = "DIVIDE", factor = 1.0)
 	emission = newEmissionNode(nodeTree)
@@ -386,11 +388,13 @@ def newCyclesFlareMaterial(image):
 	intensityNode.name = intensityNodeName
 	
 	newNodeLink(nodeTree, textureCoordinatesNode.outputs["Generated"], imageNode.inputs[0])
-	newNodeLink(nodeTree, imageNode.outputs[0], toBw.inputs[0])
-	newNodeLink(nodeTree, imageNode.outputs[0], mixColor.inputs[1])
+	newNodeLink(nodeTree, imageNode.outputs[0], colorRamp.inputs[0])
+	newNodeLink(nodeTree, colorRamp.outputs[0], rerouteImage.inputs[0])
+	newNodeLink(nodeTree, rerouteImage.outputs[0], toBw.inputs[0])
+	newNodeLink(nodeTree, rerouteImage.outputs[0], mixColor.inputs[1])
 	newNodeLink(nodeTree, toBw.outputs[0], mixColor.inputs[2])
 	newNodeLink(nodeTree, mixColor.outputs[0], emission.inputs[0])
-	newNodeLink(nodeTree, imageNode.outputs[0], intensityNode.inputs[0])
+	newNodeLink(nodeTree, rerouteImage.outputs[0], intensityNode.inputs[0])
 	linkToMixShader(nodeTree, transparent.outputs[0], emission.outputs[0], mixShader, factor = intensityNode.outputs[0])
 	newNodeLink(nodeTree, mixShader.outputs[0], output.inputs[0])
 	return material
