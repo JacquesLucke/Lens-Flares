@@ -344,7 +344,7 @@ def newFlareElementFromDictionary(flareControler, elementDataDictionary):
 	elementData[additionalRotationName] = elementDataDictionary[additionalRotationName]
 	getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value = elementDataDictionary[colorMultiplyName]
 	
-def newFlareElement(flareControler, image, name):
+def newFlareElement(flareControler, image, name = "element"):
 	camera = getCameraFromFlareControler(flareControler)
 	camera[currentElementOffsetName] += 0.0003
 	startElement = getStartElement(flareControler)
