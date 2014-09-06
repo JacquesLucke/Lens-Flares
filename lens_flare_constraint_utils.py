@@ -164,3 +164,6 @@ def setUseMinMaxToTrue(constraint):
 def deleteAllConstraints(object):
 	for constraint in object.constraints:
 		object.constraints.remove(constraint)
+		
+def getConstraintPath(constraint):
+	return 'constraints["' + constraint.name + '"]'

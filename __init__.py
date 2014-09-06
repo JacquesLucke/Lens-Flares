@@ -261,7 +261,7 @@ def newStartElement(flareControler, camera, startDistanceCalculator):
 def setStartLocationDrivers(startElement, camera, flareControler, startDistanceCalculator):
 	constraint = startElement.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
-	constraintPath = 'constraints["' + constraint.name + '"]'
+	constraintPath = getConstraintPath(constraint)
 	
 	for val in [".min", ".max"]:
 		driver = newDriver(startElement, constraintPath + val + "_x")
@@ -294,7 +294,7 @@ def newEndElement(flareControler, startElement, center, camera):
 def setEndLocationDrivers(endElement, startElement, center):
 	constraint = endElement.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
-	constraintPath = 'constraints["' + constraint.name + '"]'
+	constraintPath = getConstraintPath(constraint)
 
 	for val in [".min", ".max"]:
 		driver = newDriver(endElement, constraintPath + val + "_x")
@@ -362,7 +362,7 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement, camera):
 	
 	constraint = dataEmpty.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
-	constraintPath = 'constraints["' + constraint.name + '"]'
+	constraintPath = getConstraintPath(constraint)
 	
 	for val in [".min", ".max"]:
 		driver = newDriver(dataEmpty, constraintPath + val + "_x")
@@ -395,7 +395,7 @@ def newFlareElementPlane(image, elementData, flareControler, camera):
 	
 	setParentWithoutInverse(plane, elementData)
 	constraint = plane.constraints.new(type = "LIMIT_SCALE")
-	constraintPath = 'constraints["' + constraint.name + '"]'
+	constraintPath = getConstraintPath(constraint)
 	setUseMinMaxToTrue(constraint)
 	
 	for val in [".min", ".max"]:
@@ -418,7 +418,7 @@ def newFlareElementPlane(image, elementData, flareControler, camera):
 	constraint.target = getCenterEmpty(camera)
 	constraint.track_axis = "TRACK_X"
 	constraint.use_target_z = True
-	constraintPath = 'constraints["' + constraint.name + '"]'
+	constraintPath = getConstraintPath(constraint)
 	driver = newDriver(plane, constraintPath + ".influence", type = "SUM")
 	linkFloatPropertyToDriver(driver, "var", elementData, trackToCenterInfluencePath)
 	
@@ -430,15 +430,12 @@ def newFlareElementPlane(image, elementData, flareControler, camera):
 	constraint.owner_space = "LOCAL"
 	constraint.use_min_z = True
 	constraint.use_max_z = True
-	constraintPath = 'constraints["' + constraint.name + '"]'
-	driver = newDriver(plane, constraintPath + ".min_z")
-	linkFloatPropertyToDriver(driver, "offset", elementData, avoidArtefactsOffsetPath)
-	linkDistanceToDriver(driver, "distance", elementData, camera)
-	driver.expression = "offset*distance"
-	driver = newDriver(plane, constraintPath + ".max_z")
-	linkDistanceToDriver(driver, "distance", elementData, camera)
-	linkFloatPropertyToDriver(driver, "offset", elementData, avoidArtefactsOffsetPath)
-	driver.expression = "offset*distance"
+	constraintPath = getConstraintPath(constraint)
+	for channel in [".min_z", ".max_z"]:
+		driver = newDriver(plane, constraintPath + channel)
+		linkFloatPropertyToDriver(driver, "offset", elementData, avoidArtefactsOffsetPath)
+		linkDistanceToDriver(driver, "distance", elementData, camera)
+		driver.expression = "offset*distance"
 	
 	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value", type = "SUM")
 	linkFloatPropertyToDriver(driver, "var", elementData, intensityPath)
