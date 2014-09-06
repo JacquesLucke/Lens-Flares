@@ -66,6 +66,7 @@ intensityNodeName = "intensity"
 intensityName = "intensity"
 childOfFlarePropertyName = "child of flare"
 targetPropertyName = "flare target"
+cameraOfFlarePropertyName = "camera of this flare"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -167,6 +168,7 @@ def setCenterDistance(center, camera):
 def newFlareControler(camera, target, center):
 	flareControler = newEmpty(name = flareControlerPrefix)
 	makePartOfFlareControler(flareControler, flareControler)
+	setObjectReference(flareControler, cameraOfFlarePropertyName, camera)
 	setObjectReference(flareControler, targetPropertyName, target)
 	setParentWithoutInverse(flareControler, camera)	
 	lockCurrentLocalLocation(flareControler)
