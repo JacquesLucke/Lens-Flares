@@ -67,6 +67,8 @@ intensityName = "intensity"
 childOfFlarePropertyName = "child of flare"
 targetPropertyName = "flare target"
 cameraOfFlarePropertyName = "camera of this flare"
+startElementPropertyName = "start element"
+endElementPropertyName = "end element"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -95,6 +97,9 @@ def newLensFlare(camera, target):
 	
 	startElement = newStartElement(flareControler, camera, startDistanceCalculator)
 	endElement = newEndElement(flareControler, startElement, center, camera)
+	
+	setCustomProperty(flareControler, startElementPropertyName, startElement.name)
+	setCustomProperty(flareControler, endElementPropertyName, endElement.name)
 	
 	angleCalculator.hide = True
 	startDistanceCalculator.hide = True
