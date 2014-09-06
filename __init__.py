@@ -65,6 +65,7 @@ elementPositionName = "element position"
 planeWidthFactorName = "width factor"
 scaleXName = "scale x"
 scaleYName = "scale y"
+additionalRotationName = "additional rotation"
 trackToCenterInfluenceName = "track to center influence"
 intensityNodeName = "intensity"
 intensityName = "intensity"
@@ -91,6 +92,7 @@ elementPositionPath = getDataPath(elementPositionName)
 planeWidthFactorPath = getDataPath(planeWidthFactorName)
 scaleXPath = getDataPath(scaleXName)
 scaleYPath = getDataPath(scaleYName)
+additionalRotationPath = getDataPath(additionalRotationName)
 trackToCenterInfluencePath = getDataPath(trackToCenterInfluenceName)
 intensityPath = getDataPath(intensityName)
 elementDataNamePropertyPath = getDataPath(elementDataNamePropertyName)
@@ -346,6 +348,7 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	setCustomProperty(dataEmpty, scaleYName, 1.0, description = "Height of this element.")
 	setCustomProperty(dataEmpty, trackToCenterInfluenceName, 0.0, min = 0.0, max = 1.0, description = "0: normal; 1: rotate element to center")
 	setCustomProperty(dataEmpty, intensityName, 1.0, min = 0.0, description = "Brightness of this element.")
+	setCustomProperty(dataEmpty, additionalRotationName, 0.0, description = "Rotation in camera direction.")
 	
 	constraint = dataEmpty.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
@@ -418,6 +421,10 @@ def newFlareElementPlane(image, elementData, flareControler, camera):
 	
 	driver = newDriver(plane.material_slots[0].material.node_tree.nodes[intensityNodeName].inputs[1], "default_value", type = "SUM")
 	linkFloatPropertyToDriver(driver, "var", elementData, intensityPath)
+	
+	driver = newDriver(plane, "rotation_euler", index = 2)
+	linkFloatPropertyToDriver(driver, "var", elementData, additionalRotationPath)
+	driver.expression = "radians(var)"
 	
 	return plane
 	
@@ -605,8 +612,11 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 				layout.separator()
 				layout.prop(data, elementDataNamePropertyPath, text = "Name")
 				layout.prop(data, elementPositionPath, text = "Position")
-				layout.prop(data, trackToCenterInfluencePath, text = "Center Rotation Influence")
 				layout.prop(data, intensityPath, text = "Intensity")
+				
+				col = layout.column(align = True)
+				col.prop(data, additionalRotationPath, text = "Rotation")
+				col.prop(data, trackToCenterInfluencePath, text = "Center Influence")
 				
 				col = layout.column(align = True)
 				col.prop(data, scaleXPath, text = "Width")
