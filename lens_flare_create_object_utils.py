@@ -32,14 +32,14 @@ def newEmpty(name = "Empty", location = [0, 0, 0], hide = False, type = "PLAIN_A
 def newText(name = "Text", location = [0, 0, 0], text = "text"):
 	bpy.ops.object.text_add(location = location)
 	textObject = bpy.context.object
-	textObject.name = name
+	textObject.name = getPossibleName(name)
 	textObject.data.body = text
 	return textObject
 	
 def newPlane(name = "Plane", location = [0, 0, 0], size = 1):
 	bpy.ops.mesh.primitive_plane_add(location = location)
 	plane = bpy.context.object
-	plane.name = name
+	plane.name = getPossibleName(name)
 	plane.scale = [size, size, size]
 	bpy.ops.object.transform_apply(scale = True)
 	return plane
@@ -47,5 +47,5 @@ def newPlane(name = "Plane", location = [0, 0, 0], size = 1):
 def newCamera(name = "Camera", location = [0, 0, 0]):
 	bpy.ops.object.camera_add(location = location)
 	camera = bpy.context.object
-	camera.name = name
+	camera.name = getPossibleName(name)
 	return camera

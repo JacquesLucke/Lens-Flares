@@ -72,7 +72,8 @@ startElementPropertyName = "start element"
 endElementPropertyName = "end element"
 dataElementPropertyName = "data element"
 elementDataNamesContainerPropertyName = "element data names container"
-elementNamePropertyName = "element name"
+elementDataNamePropertyName = "element data name"
+elementPlainNamePropertyName = "element plane name"
 flareNamePropertyName = "flare name"
 linkToFlareControlerPropertyName = "flare link from target"
 
@@ -89,7 +90,7 @@ scaleXPath = getDataPath(scaleXName)
 scaleYPath = getDataPath(scaleYName)
 trackToCenterInfluencePath = getDataPath(trackToCenterInfluenceName)
 intensityPath = getDataPath(intensityName)
-elementNamePropertyPath = getDataPath(elementNamePropertyName)
+elementDataNamePropertyPath = getDataPath(elementDataNamePropertyName)
 flareNamePropertyPath = getDataPath(flareNamePropertyName)
 
 
@@ -320,6 +321,8 @@ def newFlareElement(flareControler):
 	elementData = newFlareElementDataEmpty(flareControler, startElement, endElement)
 	flareElement = newFlareElementPlane(image, elementData, flareControler, camera)	
 	
+	setCustomProperty(elementData, elementPlainNamePropertyName, flareElement.name)
+	
 	makePartOfFlareElement(elementData, elementData)
 	makePartOfFlareElement(flareElement, elementData)
 	
@@ -332,7 +335,7 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	dataEmpty.empty_draw_size = 0.01
 	
 	setParentWithoutInverse(dataEmpty, flareControler)
-	setCustomProperty(dataEmpty, elementNamePropertyName, "Glow", description = "This name shows up in the element list.")
+	setCustomProperty(dataEmpty, elementDataNamePropertyName, "Glow", description = "This name shows up in the element list.")
 	setCustomProperty(dataEmpty, randomOffsetName, getRandom(-0.01, 0.01), description = "Random offset of every object to avoid overlapping.")
 	setCustomProperty(dataEmpty, elementPositionName, 0.2, description = "Relative element position. 0: element is on target; 1: opposite side")
 	setCustomProperty(dataEmpty, scaleXName, 1.0, description = "Width of this element.")
@@ -492,11 +495,16 @@ def getStartElement(flareControler):
 	return bpy.data.objects[flareControler[startElementPropertyName]]
 def getEndElement(flareControler):
 	return bpy.data.objects[flareControler[endElementPropertyName]]
+def getElementDataObjects(flareControler):
+	container = getElementDataNamesContainer(flareControler)
+	return getObjectReferences(container)
 def getElementDataNamesContainer(flareControler):
 	return bpy.data.objects[flareControler[elementDataNamesContainerPropertyName]]
 
 def makePartOfFlareControler(object, flareControler):
 	setCustomProperty(object, childOfFlarePropertyName, flareControler.name)
+def isPartOfFlareControler(object, flareControler):
+	return object.get(childOfFlarePropertyName) == flareControler.name
 def getCorrespondingFlareControler(object):
 	if hasFlareControlerAttribute(object): return bpy.data.objects.get(object[childOfFlarePropertyName])
 	if hasLinkToFlareControler(object): return bpy.data.objects.get(object[linkToFlareControlerPropertyName])
@@ -512,6 +520,12 @@ def getCorrespondingDataElement(object):
 def hasFlareElementAttribute(object):
 	return dataElementPropertyName in object
 	
+	
+def deleteFlare(flareControler):
+	for object in bpy.data.objects:
+		if isPartOfFlareControler(object, flareControler) and object != flareControler:
+			delete(object)
+	delete(flareControler)
 	
 	
 # interface
@@ -536,6 +550,8 @@ class LensFlaresPanel(bpy.types.Panel):
 				row.scale_y = 1.35
 				selectFlare = row.operator("lens_flares.select_flare", text = flare[flareNamePropertyName])
 				selectFlare.flareName = flare.name
+				deleteFlare = row.operator("lens_flares.delete_lens_flare", text = "", icon = "X")
+				deleteFlare.flareName = flare.name
 		layout.operator("lens_flares.new_lens_flare", icon = 'PLUS')
 		
 class LensFlareSettingsPanel(bpy.types.Panel):
@@ -565,14 +581,14 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 			for data in allDatas:
 				row = col.row(align = True)
 				row.scale_y = 1.35
-				selectElement = row.operator("lens_flares.select_flare_element", text = data[elementNamePropertyName])
+				selectElement = row.operator("lens_flares.select_flare_element", text = data[elementDataNamePropertyName])
 				selectElement.elementName = data.name
 		newElement = box.operator("lens_flares.new_flare_element", icon = 'PLUS')
 		newElement.flareControler = flare.name
 		
 		for data in allDatas:
 			if data.select:
-				layout.prop(data, elementNamePropertyPath, text = "Name")
+				layout.prop(data, elementDataNamePropertyPath, text = "Name")
 				layout.prop(data, elementPositionPath, text = "Position")
 				layout.prop(data, trackToCenterInfluencePath, text = "Center Rotation Influence")
 				layout.prop(data, intensityPath, text = "Intensity")
@@ -625,6 +641,17 @@ class SelectFlareElement(bpy.types.Operator):
 	
 	def execute(self, context):
 		onlySelect(bpy.data.objects[self.elementName])
+		return{"FINISHED"}
+		
+class DeleteLensFlare(bpy.types.Operator):
+	bl_idname = "lens_flares.delete_lens_flare"
+	bl_label = "Delete Lens Flare"
+	bl_description = "Delete this Lens Flare."
+	
+	flareName = bpy.props.StringProperty()
+	
+	def execute(self, context):
+		deleteFlare(bpy.data.objects[self.flareName])
 		return{"FINISHED"}
 		
 		
