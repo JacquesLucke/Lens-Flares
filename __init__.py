@@ -19,6 +19,7 @@ Created by Jacques Lucke
 '''
 
 import sys, os, bpy, mathutils, inspect
+import xml.etree.ElementTree as ET
 from bpy.app.handlers import persistent
 sys.path.append(os.path.dirname(__file__))
 from lens_flare_utils import *
@@ -561,7 +562,7 @@ def hasFlareElementAttribute(object):
 def getPlaneFromData(data):
 	return bpy.data.objects[data[elementPlainNamePropertyName]]
 	
-def getImageFromImageData(data):
+def getImageFromElementData(data):
 	plane = getPlaneFromData(data)
 	node = getNodeWithNameInObject(plane, imageNodeName)
 	return node.image
@@ -581,13 +582,38 @@ def deleteFlareElement(elementData):
 def duplicateFlareElement(elementData):
 	flareControler = getCorrespondingFlareControler(elementData)
 	plane = getPlaneFromData(elementData)
-	image = getImageFromImageData(elementData)
+	image = getImageFromElementData(elementData)
 	name = elementData[elementDataNamePropertyName]
-	(elementDataNew, plainNew) = newFlareElement(flareControler, image, name)
+	(elementDataNew, planeNew) = newFlareElement(flareControler, image, name)
 	for propertyName in [elementPositionName, scaleXName, scaleYName, trackToCenterInfluenceName, intensityName, additionalRotationName]:
 		elementDataNew[propertyName] = elementData[propertyName]
-	getNodeWithNameInObject(plainNew, colorMultiplyNodeName).inputs[2].default_value = getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value
+	getNodeWithNameInObject(planeNew, colorMultiplyNodeName).inputs[2].default_value = getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value
 	
+def saveLensFlare(flareControler, path):
+	flare = ET.Element("Flare")
+	flare.set("name", flareControler[flareNamePropertyName])
+	
+	elements = getElementDataObjects(flareControler)
+	for element in elements:
+		plane = getPlaneFromData(element)
+		el = ET.SubElement(flare, "Element")
+		el.set("name", element[elementDataNamePropertyName])
+		
+		el.set("position", str(element[elementPositionName]))
+		el.set("intensity", str(element[intensityName]))
+		el.set("rotation", str(element[additionalRotationName]))
+		el.set("centerRotation", str(element[trackToCenterInfluenceName]))
+		el.set("width", str(element[scaleXName]))
+		el.set("height", str(element[scaleYName]))
+		el.set("imageName", str(getImageFromElementData(element).name))
+		
+		multiplyColor = ET.SubElement(el, "multiplyColor")
+		color = getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value
+		multiplyColor.set("red", str(color[0]))
+		multiplyColor.set("green", str(color[1]))
+		multiplyColor.set("blue", str(color[2]))
+	
+	ET.ElementTree(flare).write(path)
 	
 	
 # interface
@@ -612,6 +638,8 @@ class LensFlaresPanel(bpy.types.Panel):
 				row.scale_y = 1.35
 				selectFlare = row.operator("lens_flares.select_flare", text = flare[flareNamePropertyName])
 				selectFlare.flareName = flare.name
+				saveFlare = row.operator("lens_flares.save_lens_flare", text = "", icon = "SAVE_COPY")
+				saveFlare.flareName = flare.name
 				deleteFlare = row.operator("lens_flares.delete_lens_flare", text = "", icon = "X")
 				deleteFlare.flareName = flare.name
 		layout.operator("lens_flares.new_lens_flare", icon = 'PLUS')
@@ -649,7 +677,7 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 				deleteElement = row.operator("lens_flares.delete_flare_element", text = "", icon = "X")
 				deleteElement.elementName = data.name
 		newElement = box.operator("lens_flares.new_flare_element", icon = 'PLUS')
-		newElement.flareControler = flare.name
+		newElement.flareName = flare.name
 		
 		for data in allDatas:
 			if data.select or getPlaneFromData(data).select:
@@ -692,15 +720,31 @@ class NewFlareElement(bpy.types.Operator):
 	bl_label = "New Flare Element"
 	bl_description = "Create a new Element in active Lens Flare."
 
-	flareControler = bpy.props.StringProperty()
+	flareName = bpy.props.StringProperty()
 	filepath = bpy.props.StringProperty(subtype="FILE_PATH")
 
 	def execute(self, context):
-		newFlareElement(bpy.data.objects[self.flareControler], getImage(self.filepath), getFileName(self.filepath))
+		newFlareElement(bpy.data.objects[self.flareName], getImage(self.filepath), getFileName(self.filepath))
 		return {'FINISHED'}
 
 	def invoke(self, context, event):
 		self.filepath = elementsFolder
+		context.window_manager.fileselect_add(self)
+		return {'RUNNING_MODAL'}
+		
+class SaveLensFlare(bpy.types.Operator):
+	bl_idname = "lens_flares.save_lens_flare"
+	bl_label = "Save Lens Flare"
+	bl_description = "Save this Lens Flare."
+	
+	flareName = bpy.props.StringProperty()
+	filepath = bpy.props.StringProperty(subtype="FILE_PATH")
+	
+	def execute(self, context):
+		saveLensFlare(bpy.data.objects[self.flareName], self.filepath)
+		return{"FINISHED"}
+		
+	def invoke(self, context, event):
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 		
@@ -762,7 +806,8 @@ class DuplicateFlareElement(bpy.types.Operator):
 	def execute(self, context):
 		duplicateFlareElement(bpy.data.objects[self.elementName])
 		return{"FINISHED"}
-
+		
+		
 		
 # register
 ##################################
