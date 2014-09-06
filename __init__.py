@@ -514,7 +514,7 @@ def hasFlareElementAttribute(object):
 # interface
 ##################################
 
-class LensFlarePanel(bpy.types.Panel):
+class LensFlaresPanel(bpy.types.Panel):
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
 	bl_category = "Lens Flares"
@@ -525,19 +525,26 @@ class LensFlarePanel(bpy.types.Panel):
 		layout = self.layout		
 		
 		flares = getAllFlares()
-		box = layout.box()
-		if len(flares) == 0: box.label("no flares in this scene", icon = "INFO")
+		if len(flares) == 0: layout.label("no flares in this scene", icon = "INFO")
 		else:
-			col = box.column(align = True)
+			col = layout.column(align = True)
 			for flare in flares:
 				row = col.row(align = True)
 				row.scale_y = 1.35
 				selectFlare = row.operator("lens_flares.select_flare", text = flare.name)
 				selectFlare.flareName = flare.name
-		box.operator("lens_flares.new_lens_flare", icon = 'PLUS')
-			
-		layout.separator()
-			
+		layout.operator("lens_flares.new_lens_flare", icon = 'PLUS')
+		
+class LensFlareElementsPanel(bpy.types.Panel):
+	bl_space_type = "VIEW_3D"
+	bl_region_type = "TOOLS"
+	bl_category = "Lens Flares"
+	bl_label = "Lens Flares Elements"
+	bl_context = "objectmode"
+	
+	def draw(self, context):
+		layout = self.layout		
+		
 		selectedFlares = getSelectedFlares()
 		if len(selectedFlares) > 0:
 			flare = selectedFlares[0]
@@ -568,7 +575,6 @@ class LensFlarePanel(bpy.types.Panel):
 					col = subBox.column(align = True)
 					col.prop(data, scaleXPath, text = "Width")
 					col.prop(data, scaleYPath, text = "Height")
-		
 		
 		
 # operators
