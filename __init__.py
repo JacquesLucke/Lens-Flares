@@ -322,6 +322,7 @@ def newFlareElement(flareControler):
 def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	dataEmpty = newEmpty(name = flareElementDataPrefix)
 	makePartOfFlareControler(dataEmpty, flareControler)
+	dataEmpty.empty_draw_size = 0.01
 	
 	setParentWithoutInverse(dataEmpty, flareControler)
 	setCustomProperty(dataEmpty, randomOffsetName, getRandom(-0.01, 0.01))
@@ -508,8 +509,6 @@ class LensFlarePanel(bpy.types.Panel):
 		for flare in flares:
 			box = layout.box()
 			box.label(flare.name)
-			newElement = box.operator("lens_flares.new_flare_element")
-			newElement.flareControler = flare.name
 			
 			for elementData in elementDatas:
 				if getCorrespondingFlareControler(elementData) == flare:
@@ -517,8 +516,14 @@ class LensFlarePanel(bpy.types.Panel):
 					
 			allDatas = getDataElementsFromFlare(flare)
 			subBox = box.box()
+			col = subBox.column(align = True)
 			for data in allDatas:
-				subBox.label(data.name)
+				row = col.row(align = True)
+				row.scale_y = 1.35
+				selectElement = row.operator("lens_flares.select_flare_element", text = data.name)
+				selectElement.elementName = data.name
+			newElement = subBox.operator("lens_flares.new_flare_element", icon = 'PLUS')
+			newElement.flareControler = flare.name
 		
 		
 		
@@ -543,6 +548,17 @@ class NewFlareElement(bpy.types.Operator):
 	
 	def execute(self, context):
 		newFlareElement(bpy.data.objects[self.flareControler])
+		return{"FINISHED"}
+		
+class SelectFlareElement(bpy.types.Operator):
+	bl_idname = "lens_flares.select_flare_element"
+	bl_label = "Select Flare Element"
+	bl_description = "Select this element to change its settings."
+	
+	elementName = bpy.props.StringProperty()
+	
+	def execute(self, context):
+		onlySelect(bpy.data.objects[self.elementName])
 		return{"FINISHED"}
 		
 		

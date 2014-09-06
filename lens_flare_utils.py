@@ -48,6 +48,10 @@ def setActive(object):
 	object.select = True
 	bpy.context.scene.objects.active = object
 	
+def onlySelect(object):
+	deselectAll()
+	setActive(object)
+	
 def deleteSelectedObjects():
 	bpy.ops.object.delete(use_global=False)
 	
