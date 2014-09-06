@@ -414,6 +414,15 @@ def newCyclesFlareMaterial(image):
 # utils
 ################################
 
+def getSelectedFlares():
+	flareControlers = []
+	selection = getSelectedObjects()
+	for object in selection:
+		if hasFlareControlerAttribute(object):
+			flareControler = getCorrespondingFlareControler(object)
+			if flareControler not in flareControlers: flareControlers.append(flareControler)
+	return flareControlers
+
 def isFlareControlerActive():
 	return getActiveFlareControler() is not None
 	
@@ -457,6 +466,12 @@ def isEndElement(object):
 
 def makePartOfFlareControler(object, flareControler):
 	setCustomProperty(object, childOfFlarePropertyName, flareControler.name)
+def hasFlareControlerAttribute(object):
+	return childOfFlarePropertyName in object
+def getCorrespondingFlareControler(object):
+	if hasFlareControlerAttribute(object):
+		return bpy.data.objects[object[childOfFlarePropertyName]]
+	return None
 	
 	
 	
@@ -474,6 +489,8 @@ class LensFlarePanel(bpy.types.Panel):
 		layout = self.layout		
 		layout.operator("lens_flares.new_lens_flare")
 		layout.operator("lens_flares.new_flare_element")
+		
+		print(getSelectedFlares())
 		
 		
 		
