@@ -44,10 +44,11 @@ def setTransformDifferenceAsProperty(target, relative, propertyName, transformCh
 		driver.expression = "(a-b)/(dis+0.0000001)"
 	else: driver.expression = "a-b"
 
-def linkFloatPropertyToDriver(driver, name, id, dataPath):
+def linkFloatPropertyToDriver(driver, name, id, dataPath, idType = "OBJECT"):
 	driverVariable = driver.variables.new()
 	driverVariable.name = name
 	driverVariable.type = "SINGLE_PROP"
+	driverVariable.targets[0].id_type = idType
 	driverVariable.targets[0].id = id
 	driverVariable.targets[0].data_path = dataPath
 def linkTransformChannelToDriver(driver, name, id, transformType, space = "WORLD_SPACE"):

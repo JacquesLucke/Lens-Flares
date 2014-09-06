@@ -84,6 +84,8 @@ def isTextObject(object):
 	
 def isCameraObject(object):
 	return hasattr(object, "dof_object")
+def getCameraFromObject(object):
+	return bpy.data.cameras[object.name]
 	
 def delete(object):
 	deselectAll()
