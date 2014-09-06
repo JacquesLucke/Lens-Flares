@@ -505,14 +505,9 @@ class LensFlarePanel(bpy.types.Panel):
 		layout.operator("lens_flares.new_lens_flare")
 		
 		flares = getSelectedFlares()
-		elementDatas = getSelectedFlareElementDatas()
 		for flare in flares:
 			box = layout.box()
 			box.label(flare.name)
-			
-			for elementData in elementDatas:
-				if getCorrespondingFlareControler(elementData) == flare:
-					box.label(elementData.name)
 					
 			allDatas = getDataElementsFromFlare(flare)
 			subBox = box.box()
