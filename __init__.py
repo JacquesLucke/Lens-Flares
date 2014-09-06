@@ -72,6 +72,7 @@ startElementPropertyName = "start element"
 endElementPropertyName = "end element"
 dataElementPropertyName = "data element"
 elementDataNamesContainerPropertyName = "element data names container"
+elementNamePropertyName = "element name"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -86,6 +87,7 @@ scaleXPath = getDataPath(scaleXName)
 scaleYPath = getDataPath(scaleYName)
 trackToCenterInfluencePath = getDataPath(trackToCenterInfluenceName)
 intensityPath = getDataPath(intensityName)
+elementNamePropertyPath = getDataPath(elementNamePropertyName)
 
 
 # new lens flare
@@ -325,6 +327,7 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	dataEmpty.empty_draw_size = 0.01
 	
 	setParentWithoutInverse(dataEmpty, flareControler)
+	setCustomProperty(dataEmpty, elementNamePropertyName, "Glow")
 	setCustomProperty(dataEmpty, randomOffsetName, getRandom(-0.01, 0.01))
 	setCustomProperty(dataEmpty, elementPositionName, 0.2)
 	setCustomProperty(dataEmpty, scaleXName, 1.0)
@@ -515,7 +518,7 @@ class LensFlarePanel(bpy.types.Panel):
 			for data in allDatas:
 				row = col.row(align = True)
 				row.scale_y = 1.35
-				selectElement = row.operator("lens_flares.select_flare_element", text = data.name)
+				selectElement = row.operator("lens_flares.select_flare_element", text = data[elementNamePropertyName])
 				selectElement.elementName = data.name
 			newElement = subBox.operator("lens_flares.new_flare_element", icon = 'PLUS')
 			newElement.flareControler = flare.name
@@ -523,7 +526,7 @@ class LensFlarePanel(bpy.types.Panel):
 			for data in allDatas:
 				if data.select:
 					subBox = box.box()
-					subBox.label(data.name)
+					subBox.prop(data, elementNamePropertyPath, text = "Name")
 					subBox.prop(data, elementPositionPath)
 					subBox.prop(data, intensityPath)
 					subBox.prop(data, scaleXPath)
