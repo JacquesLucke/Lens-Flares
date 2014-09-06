@@ -458,6 +458,11 @@ def getSelectedFlareElementDatas():
 				flareElementDatas.append(elementData)
 	return flareElementDatas
 	
+def getDataElementsFromFlare(flareControler):
+	elementDataNamesContainer = getElementDataNamesContainer(flareControler)
+	elementDatas = getObjectReferences(elementDataNamesContainer)
+	return elementDatas
+	
 def getCameraFromFlareControler(flareControler):
 	return flareControler.parent
 	
@@ -509,6 +514,11 @@ class LensFlarePanel(bpy.types.Panel):
 			for elementData in elementDatas:
 				if getCorrespondingFlareControler(elementData) == flare:
 					box.label(elementData.name)
+					
+			allDatas = getDataElementsFromFlare(flare)
+			subBox = box.box()
+			for data in allDatas:
+				subBox.label(data.name)
 		
 		
 		

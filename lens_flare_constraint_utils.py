@@ -68,6 +68,19 @@ def appendObjectReference(object, target):
 	constraint.influence = 0
 	constraint.target = target
 	constraint.show_expanded = False
+	
+def getObjectReferences(object):
+	references = []
+	for constraint in object.constraints:
+		if constraint.type == "CHILD_OF":
+			target = constraint.target
+			if target is not None: references.append(target)
+	return references
+	
+def cleanReferenceList(object):
+	for constraint in object.constraints:
+		if contraint.type == "CHILD_OF":
+			if contraint.target is None: object.constraints.remove(contraint)
 		
 def getObjectReference(object, name):
 	if isObjectReferenceSet(object, name):
