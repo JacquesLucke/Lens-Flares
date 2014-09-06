@@ -94,7 +94,7 @@ def removeObjectReference(object, name):
 def newLinkedLimitLocationConstraint(object):
 	constraint = object.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
-	constraintPath = 'constraints["' + constraint.name + '"]'
+	constraintPath = getConstraintPath(constraint)
 	createCopyValueDriver(object, constraintPath + ".min_x", object, constraintPath + ".max_x")
 	createCopyValueDriver(object, constraintPath + ".min_y", object, constraintPath + ".max_y")
 	createCopyValueDriver(object, constraintPath + ".min_z", object, constraintPath + ".max_z")
