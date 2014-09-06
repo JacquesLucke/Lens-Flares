@@ -520,12 +520,19 @@ def getCorrespondingDataElement(object):
 def hasFlareElementAttribute(object):
 	return dataElementPropertyName in object
 	
+def getPlaneFromData(data):
+	return bpy.data.objects[data[elementPlainNamePropertyName]]
+	
 	
 def deleteFlare(flareControler):
 	for object in bpy.data.objects:
 		if isPartOfFlareControler(object, flareControler) and object != flareControler:
 			delete(object)
 	delete(flareControler)
+	
+def deleteFlareElement(elementData):
+	delete(getPlaneFromData(elementData))
+	delete(elementData)
 	
 	
 # interface
@@ -583,6 +590,8 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 				row.scale_y = 1.35
 				selectElement = row.operator("lens_flares.select_flare_element", text = data[elementDataNamePropertyName])
 				selectElement.elementName = data.name
+				deleteElement = row.operator("lens_flares.delete_flare_element", text = "", icon = "X")
+				deleteElement.elementName = data.name
 		newElement = box.operator("lens_flares.new_flare_element", icon = 'PLUS')
 		newElement.flareControler = flare.name
 		
@@ -651,7 +660,22 @@ class DeleteLensFlare(bpy.types.Operator):
 	flareName = bpy.props.StringProperty()
 	
 	def execute(self, context):
+		selectionBefore = getSelectedObjects()
 		deleteFlare(bpy.data.objects[self.flareName])
+		setSelectedObjects(selectionBefore)
+		return{"FINISHED"}
+		
+class DeleteFlareElement(bpy.types.Operator):
+	bl_idname = "lens_flares.delete_flare_element"
+	bl_label = "Delete Flare Element"
+	bl_description = "Delete this Element."
+	
+	elementName = bpy.props.StringProperty()
+	
+	def execute(self, context):
+		selectionBefore = getSelectedObjects()
+		deleteFlareElement(bpy.data.objects[self.elementName])
+		setSelectedObjects(selectionBefore)
 		return{"FINISHED"}
 		
 		
