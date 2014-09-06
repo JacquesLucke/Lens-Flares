@@ -480,9 +480,14 @@ class LensFlarePanel(bpy.types.Panel):
 	def draw(self, context):
 		layout = self.layout		
 		layout.operator("lens_flares.new_lens_flare")
-		layout.operator("lens_flares.new_flare_element")
 		
-		print(getSelectedFlares())
+		flares = getSelectedFlares()
+		for i in range(len(flares)):
+			flare = flares[i]
+			box = layout.box()
+			box.label(flare.name)
+			newElement = box.operator("lens_flares.new_flare_element")
+			newElement.flareControler = flare.name
 		
 		
 		
@@ -503,12 +508,14 @@ class NewFlareElement(bpy.types.Operator):
 	bl_label = "New Flare Element"
 	bl_description = "Create a new Element in active Lens Flare."
 	
+	flareControler = bpy.props.StringProperty()
+	
 	@classmethod
 	def poll(self, context):
 		return isFlareControlerActive()
 	
 	def execute(self, context):
-		newFlareElement(getActiveFlareControler())
+		newFlareElement(bpy.data.objects[self.flareControler])
 		return{"FINISHED"}
 		
 		
