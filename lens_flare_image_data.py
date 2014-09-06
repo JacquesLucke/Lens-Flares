@@ -18,5 +18,15 @@ Created by Jacques Lucke
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import bpy
+import bpy, inspect
 from lens_flare_utils import *
+
+folder = inspect.getfile(inspect.currentframe())[0:-len("lens_flare_image_data.py")] + "elements\\"
+
+elementsDictionary = {
+		"GLOW_1" : "glow1.jpg",
+		"CIRCLE_1" : "circle.jpg"
+	}
+
+def getElementImage(name):
+	return getImage(folder + elementsDictionary[name])

@@ -313,8 +313,7 @@ def newElementDataNamesContainer(flareControler):
 #########################################
 	
 def newFlareElement(flareControler):
-	imagePath = inspect.getfile(inspect.currentframe())[0:-len("__init__.py")] + "elements/glow1.jpg"
-	image = getImage(imagePath)
+	image = getElementImage("GLOW_1")
 	camera = getCameraFromFlareControler(flareControler)
 	startElement = getStartElement(flareControler)
 	endElement = getEndElement(flareControler)
