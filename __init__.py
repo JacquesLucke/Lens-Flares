@@ -85,8 +85,7 @@ intensityPath = getDataPath(intensityName)
 # new lens flare
 ###################################
 
-def newLensFlare(target):
-	camera = getActiveCamera()
+def newLensFlare(camera, target):
 	center = getCenterEmpty(camera)
 	flareControler = newFlareControler(camera, target, center)	
 	makePartOfFlareControler(target, flareControler)
@@ -498,7 +497,7 @@ class NewLensFlare(bpy.types.Operator):
 	bl_description = "Create a new Lens Flare."
 	
 	def execute(self, context):
-		newLensFlare(getActive())
+		newLensFlare(getActiveCamera(), getActive())
 		return{"FINISHED"}
 		
 class NewFlareElement(bpy.types.Operator):
