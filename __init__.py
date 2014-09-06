@@ -623,6 +623,7 @@ def duplicateFlareElement(elementEmpty):
 def saveLensFlare(flareControler, path):
 	flare = ET.Element("Flare")
 	flare.set("name", flareControler[flareNamePropertyName])
+	flare.set("intensity", str(flareControler[intensityName]))
 	
 	elements = getElementEmptyObjects(flareControler)
 	for element in elements:
