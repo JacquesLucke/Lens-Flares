@@ -348,7 +348,7 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	setCustomProperty(dataEmpty, scaleYName, 1.0, min = 0.0, description = "Height of this element.")
 	setCustomProperty(dataEmpty, trackToCenterInfluenceName, 0.0, min = 0.0, max = 1.0, description = "0: normal; 1: rotate element to center")
 	setCustomProperty(dataEmpty, intensityName, 1.0, min = 0.0, description = "Brightness of this element.")
-	setCustomProperty(dataEmpty, additionalRotationName, 0.0, description = "Rotation in camera direction.")
+	setCustomProperty(dataEmpty, additionalRotationName, 0, description = "Rotation in camera direction.")
 	
 	constraint = dataEmpty.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
