@@ -116,6 +116,7 @@ def newLensFlare(camera, target):
 	setCustomProperty(flareControler, endElementPropertyName, endElement.name)
 	setCustomProperty(flareControler, elementDataNamesContainerPropertyName, elementDataNamesContainer.name)
 	
+	flareControler.hide =  True
 	angleCalculator.hide = True
 	startDistanceCalculator.hide = True
 	startElement.hide = True
@@ -339,7 +340,7 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	
 	setParentWithoutInverse(dataEmpty, flareControler)
 	setCustomProperty(dataEmpty, elementDataNamePropertyName, "Glow", description = "This name shows up in the element list.")
-	setCustomProperty(dataEmpty, randomOffsetName, getRandom(-0.01, 0.01), description = "Random offset of every object to avoid overlapping.")
+	setCustomProperty(dataEmpty, randomOffsetName, getRandom(-0.001, 0.001), description = "Random offset of every object to avoid overlapping.")
 	setCustomProperty(dataEmpty, elementPositionName, 0.2, description = "Relative element position. 0: element is on target; 1: opposite side")
 	setCustomProperty(dataEmpty, scaleXName, 1.0, description = "Width of this element.")
 	setCustomProperty(dataEmpty, scaleYName, 1.0, description = "Height of this element.")
@@ -469,6 +470,7 @@ def getAllFlares():
 def getSelectedFlares():
 	flareControlers = []
 	selection = getSelectedObjects()
+	selection.append(getActive())
 	for object in selection:
 		if hasFlareControlerAttribute(object) or hasLinkToFlareControler(object):
 			flareControler = getCorrespondingFlareControler(object)

@@ -29,16 +29,16 @@ def setTrackTo(child, trackTo):
 	bpy.ops.object.track_set(type = "TRACKTO")   
 
 def setParent(child, parent):
-	deselectAll()
-	child.select = True
-	setActive(parent)
-	bpy.ops.object.parent_set(type = "OBJECT", keep_transform = True)
+	child.parent = parent
 	
 def setParentWithoutInverse(child, parent):
+	hide = (child.hide, parent.hide)
+	child.hide = parent.hide = False
 	deselectAll()
 	child.select = True
 	setActive(parent)
 	bpy.ops.object.parent_no_inverse_set()
+	(child.hide, parent.hide) = hide
 
 def isObjectReferenceSet(object, name):
 	if name in object.constraints:
