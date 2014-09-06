@@ -527,10 +527,12 @@ class LensFlarePanel(bpy.types.Panel):
 				if data.select:
 					subBox = box.box()
 					subBox.prop(data, elementNamePropertyPath, text = "Name")
-					subBox.prop(data, elementPositionPath)
-					subBox.prop(data, intensityPath)
-					subBox.prop(data, scaleXPath)
-					subBox.prop(data, scaleYPath)
+					subBox.prop(data, elementPositionPath, text = "Position")
+					subBox.prop(data, intensityPath, text = "Intensity")
+					
+					col = subBox.column(align = True)
+					col.prop(data, scaleXPath, text = "Width")
+					col.prop(data, scaleYPath, text = "Height")
 		
 		
 		
