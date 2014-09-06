@@ -316,6 +316,9 @@ def newFlareElement(flareControler):
 	makePartOfFlareElement(elementData, elementData)
 	makePartOfFlareElement(flareElement, elementData)
 	
+	elementDataNamesContainer = getElementDataNamesContainer(flareControler)
+	appendObjectReference(elementDataNamesContainer, elementData)
+	
 def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	dataEmpty = newEmpty(name = flareElementDataPrefix)
 	makePartOfFlareControler(dataEmpty, flareControler)
@@ -468,6 +471,8 @@ def getStartElement(flareControler):
 	return bpy.data.objects[flareControler[startElementPropertyName]]
 def getEndElement(flareControler):
 	return bpy.data.objects[flareControler[endElementPropertyName]]
+def getElementDataNamesContainer(flareControler):
+	return bpy.data.objects[flareControler[elementDataNamesContainerPropertyName]]
 
 def makePartOfFlareControler(object, flareControler):
 	setCustomProperty(object, childOfFlarePropertyName, flareControler.name)

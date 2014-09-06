@@ -63,6 +63,12 @@ def setObjectReference(object, name, target):
 		constraint.target = target
 		constraint.show_expanded = False
 		
+def appendObjectReference(object, target):
+	constraint = object.constraints.new(type = "CHILD_OF")
+	constraint.influence = 0
+	constraint.target = target
+	constraint.show_expanded = False
+		
 def getObjectReference(object, name):
 	if isObjectReferenceSet(object, name):
 		return object.constraints[name].target
