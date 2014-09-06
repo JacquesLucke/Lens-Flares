@@ -201,6 +201,7 @@ def newFlareControler(camera, target, center):
 	flareControler = newEmpty(name = flareControlerPrefix)
 	makePartOfFlareControler(flareControler, flareControler)
 	setCustomProperty(flareControler, flareNamePropertyName, "Lens Flare")
+	setCustomProperty(flareControler, intensityName, 1.0, min = 0.0)
 	setObjectReference(flareControler, cameraOfFlarePropertyName, camera)
 	setObjectReference(flareControler, targetPropertyName, target)
 	setParentWithoutInverse(flareControler, camera)	
@@ -437,8 +438,10 @@ def newFlareElementPlane(image, elementData, flareControler, camera):
 		linkDistanceToDriver(driver, "distance", elementData, camera)
 		driver.expression = "offset*distance"
 	
-	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value", type = "SUM")
-	linkFloatPropertyToDriver(driver, "var", elementData, intensityPath)
+	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value")
+	linkFloatPropertyToDriver(driver, "special", elementData, intensityPath)
+	linkFloatPropertyToDriver(driver, "general", flareControler, intensityPath)
+	driver.expression = "special * general"
 	
 	driver = newDriver(plane, "rotation_euler", index = 2)
 	linkFloatPropertyToDriver(driver, "var", elementData, additionalRotationPath)
@@ -625,6 +628,7 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 		self.bl_label = "Settings: " + flare[flareNamePropertyName]
 		
 		layout.prop(flare, flareNamePropertyPath, text = "Name")
+		layout.prop(flare, intensityPath, text = "Intensity")
 				
 		allDatas = getDataElementsFromFlare(flare)
 		box = layout.box()
