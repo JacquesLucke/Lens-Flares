@@ -79,3 +79,9 @@ def makeOnlyVisibleToCamera(object):
 	object.cycles_visibility.diffuse = False
 	object.cycles_visibility.shadow = False
 	object.cycles_visibility.transmission = False
+	
+def getNodeWithNameInObject(object, name):
+	for slot in object.material_slots:
+		node = slot.material.node_tree.nodes.get(name)
+		if node is not None: return node
+	return None

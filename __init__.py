@@ -69,6 +69,7 @@ additionalRotationName = "additional rotation"
 trackToCenterInfluenceName = "track to center influence"
 intensityNodeName = "intensity"
 intensityName = "intensity"
+imageNodeName = "image node"
 childOfFlarePropertyName = "child of flare"
 targetPropertyName = "flare target"
 cameraOfFlarePropertyName = "camera of this flare"
@@ -335,6 +336,8 @@ def newFlareElement(flareControler, image, name):
 	
 	setCustomProperty(elementData, elementDataNamePropertyName, name)
 	
+	return (elementData, flareElement)
+	
 def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	dataEmpty = newEmpty(name = flareElementDataPrefix)
 	makePartOfFlareControler(dataEmpty, flareControler)
@@ -419,7 +422,7 @@ def newFlareElementPlane(image, elementData, flareControler, camera):
 	constraint.owner_space = "LOCAL"
 	constraint.use_limit_y = True
 	
-	driver = newDriver(plane.material_slots[0].material.node_tree.nodes[intensityNodeName].inputs[1], "default_value", type = "SUM")
+	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value", type = "SUM")
 	linkFloatPropertyToDriver(driver, "var", elementData, intensityPath)
 	
 	driver = newDriver(plane, "rotation_euler", index = 2)
@@ -447,6 +450,7 @@ def newCyclesFlareMaterial(image):
 	
 	imageNode.image = image
 	intensityNode.name = intensityNodeName
+	imageNode.name = imageNodeName
 	
 	newNodeLink(nodeTree, textureCoordinatesNode.outputs["Generated"], imageNode.inputs[0])
 	newNodeLink(nodeTree, imageNode.outputs[0], colorRamp.inputs[0])
@@ -535,6 +539,10 @@ def hasFlareElementAttribute(object):
 def getPlaneFromData(data):
 	return bpy.data.objects[data[elementPlainNamePropertyName]]
 	
+def getImageFromImageData(data):
+	plane = getPlaneFromData(data)
+	node = getNodeWithNameInObject(plane, imageNodeName)
+	return node.image
 	
 def deleteFlare(flareControler):
 	for object in bpy.data.objects:
@@ -547,6 +555,15 @@ def deleteFlareElement(elementData):
 	delete(getPlaneFromData(elementData))
 	delete(elementData)
 	cleanReferenceList(getElementDataNamesContainer(flareControler))
+	
+def duplicateFlareElement(elementData):
+	flareControler = getCorrespondingFlareControler(elementData)
+	image = getImageFromImageData(elementData)
+	name = elementData[elementDataNamePropertyName]
+	(elementDataNew, flareElementNew) = newFlareElement(flareControler, image, name)
+	for propertyName in [elementPositionName, scaleXName, scaleYName, trackToCenterInfluenceName, intensityName, additionalRotationName]:
+		elementDataNew[propertyName] = elementData[propertyName]
+	
 	
 	
 # interface
@@ -612,7 +629,12 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 		for data in allDatas:
 			if data.select or getPlaneFromData(data).select:
 				layout.separator()
-				layout.prop(data, elementDataNamePropertyPath, text = "Name")
+				
+				row = layout.row(align = True)
+				row.prop(data, elementDataNamePropertyPath, text = "Name")
+				duplicateElement = row.operator("lens_flares.duplicate_flare_element", text = "", icon = "NEW")
+				duplicateElement.elementName = data.name
+				
 				layout.prop(data, elementPositionPath, text = "Position")
 				layout.prop(data, intensityPath, text = "Intensity")
 				
@@ -702,7 +724,16 @@ class DeleteFlareElement(bpy.types.Operator):
 		setSelectedObjects(selectionBefore)
 		return{"FINISHED"}
 
-
+class DuplicateFlareElement(bpy.types.Operator):
+	bl_idname = "lens_flares.duplicate_flare_element"
+	bl_label = "Duplicate Flare Element"
+	bl_description = "Duplicate this Element."
+	
+	elementName = bpy.props.StringProperty()
+	
+	def execute(self, context):
+		duplicateFlareElement(bpy.data.objects[self.elementName])
+		return{"FINISHED"}
 
 		
 # register
