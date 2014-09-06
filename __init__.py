@@ -73,6 +73,7 @@ endElementPropertyName = "end element"
 dataElementPropertyName = "data element"
 elementDataNamesContainerPropertyName = "element data names container"
 elementNamePropertyName = "element name"
+flareNamePropertyName = "flare name"
 linkToFlareControlerPropertyName = "flare link from target"
 
 anglePath = getDataPath(angleName)
@@ -89,6 +90,7 @@ scaleYPath = getDataPath(scaleYName)
 trackToCenterInfluencePath = getDataPath(trackToCenterInfluenceName)
 intensityPath = getDataPath(intensityName)
 elementNamePropertyPath = getDataPath(elementNamePropertyName)
+flareNamePropertyPath = getDataPath(flareNamePropertyName)
 
 
 # new lens flare
@@ -184,6 +186,7 @@ def setCenterDistance(center, camera):
 def newFlareControler(camera, target, center):
 	flareControler = newEmpty(name = flareControlerPrefix)
 	makePartOfFlareControler(flareControler, flareControler)
+	setCustomProperty(flareControler, flareNamePropertyName, "Lens Flare")
 	setObjectReference(flareControler, cameraOfFlarePropertyName, camera)
 	setObjectReference(flareControler, targetPropertyName, target)
 	setParentWithoutInverse(flareControler, camera)	
@@ -531,7 +534,7 @@ class LensFlaresPanel(bpy.types.Panel):
 			for flare in flares:
 				row = col.row(align = True)
 				row.scale_y = 1.35
-				selectFlare = row.operator("lens_flares.select_flare", text = flare.name)
+				selectFlare = row.operator("lens_flares.select_flare", text = flare[flareNamePropertyName])
 				selectFlare.flareName = flare.name
 		layout.operator("lens_flares.new_lens_flare", icon = 'PLUS')
 		
@@ -551,6 +554,8 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 		
 		flare = getSelectedFlares()[0]
 		self.bl_label = "Settings: " + flare.name
+		
+		layout.prop(flare, flareNamePropertyPath, text = "Name")
 				
 		allDatas = getDataElementsFromFlare(flare)
 		box = layout.box()
