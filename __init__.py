@@ -465,21 +465,9 @@ def getCameraFromFlareControler(flareControler):
 	return flareControler.parent
 	
 def getStartElement(flareControler):
-	for object in bpy.data.objects:
-		if isStartElement(object) and object.parent == flareControler:
-			return object
-	return None
-	
-def isStartElement(object):
-	return hasPrefix(object.name, startElementPrefix) and isFlareControler(object.parent)
-	
+	return bpy.data.objects[flareControler[startElementPropertyName]]
 def getEndElement(flareControler):
-	for object in bpy.data.objects:
-		if isEndElement(object) and object.parent == flareControler:
-			return object
-	return None
-def isEndElement(object):
-	return hasPrefix(object.name, endElementPrefix) and isFlareControler(object.parent)
+	return bpy.data.objects[flareControler[endElementPropertyName]]
 
 def makePartOfFlareControler(object, flareControler):
 	setCustomProperty(object, childOfFlarePropertyName, flareControler.name)
