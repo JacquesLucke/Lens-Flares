@@ -21,6 +21,7 @@ Created by Jacques Lucke
 import sys, os, bpy, mathutils, inspect
 from bpy.app.handlers import persistent
 sys.path.append(os.path.dirname(__file__)) 
+from lens_flare_image_data import *
 from lens_flare_utils import *
 from lens_flare_create_object_utils import *
 from lens_flare_constraint_utils import *
