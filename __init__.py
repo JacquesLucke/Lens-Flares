@@ -535,46 +535,46 @@ class LensFlaresPanel(bpy.types.Panel):
 				selectFlare.flareName = flare.name
 		layout.operator("lens_flares.new_lens_flare", icon = 'PLUS')
 		
-class LensFlareElementsPanel(bpy.types.Panel):
+class LensFlareSettingsPanel(bpy.types.Panel):
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
 	bl_category = "Lens Flares"
-	bl_label = "Lens Flares Elements"
+	bl_label = "Lens Flares Settings"
 	bl_context = "objectmode"
 	
+	@classmethod
+	def poll(self, context):
+		return len(getSelectedFlares()) > 0
+	
 	def draw(self, context):
-		layout = self.layout		
+		layout = self.layout
 		
-		selectedFlares = getSelectedFlares()
-		if len(selectedFlares) > 0:
-			flare = selectedFlares[0]
-			box = layout.box()
-			box.label(flare.name)
-					
-			allDatas = getDataElementsFromFlare(flare)
-			subBox = box.box()
-			if len(allDatas) == 0: subBox.label("no elements on this flare", icon = "INFO")
-			else:
-				col = subBox.column(align = True)
-				for data in allDatas:
-					row = col.row(align = True)
-					row.scale_y = 1.35
-					selectElement = row.operator("lens_flares.select_flare_element", text = data[elementNamePropertyName])
-					selectElement.elementName = data.name
-			newElement = subBox.operator("lens_flares.new_flare_element", icon = 'PLUS')
-			newElement.flareControler = flare.name
-			
+		flare = getSelectedFlares()[0]
+		self.bl_label = "Settings: " + flare.name
+				
+		allDatas = getDataElementsFromFlare(flare)
+		box = layout.box()
+		if len(allDatas) == 0: box.label("no elements on this flare", icon = "INFO")
+		else:
+			col = box.column(align = True)
 			for data in allDatas:
-				if data.select:
-					subBox = box.box()
-					subBox.prop(data, elementNamePropertyPath, text = "Name")
-					subBox.prop(data, elementPositionPath, text = "Position")
-					subBox.prop(data, trackToCenterInfluencePath, text = "Center Rotation Influence")
-					subBox.prop(data, intensityPath, text = "Intensity")
-					
-					col = subBox.column(align = True)
-					col.prop(data, scaleXPath, text = "Width")
-					col.prop(data, scaleYPath, text = "Height")
+				row = col.row(align = True)
+				row.scale_y = 1.35
+				selectElement = row.operator("lens_flares.select_flare_element", text = data[elementNamePropertyName])
+				selectElement.elementName = data.name
+		newElement = box.operator("lens_flares.new_flare_element", icon = 'PLUS')
+		newElement.flareControler = flare.name
+		
+		for data in allDatas:
+			if data.select:
+				layout.prop(data, elementNamePropertyPath, text = "Name")
+				layout.prop(data, elementPositionPath, text = "Position")
+				layout.prop(data, trackToCenterInfluencePath, text = "Center Rotation Influence")
+				layout.prop(data, intensityPath, text = "Intensity")
+				
+				col = layout.column(align = True)
+				col.prop(data, scaleXPath, text = "Width")
+				col.prop(data, scaleYPath, text = "Height")
 		
 		
 # operators
