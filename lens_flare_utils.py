@@ -124,4 +124,11 @@ def getRandom(min, max):
 	
 def hasPrefix(name, prefix):
 	return name[:len(prefix)] == prefix
+	
+def getPossibleName(prefix):
+	if bpy.data.objects.get(prefix) is None: return prefix
+	i = 1
+	while bpy.data.objects.get(prefix + str(i)) is not None:
+		i += 1
+	return prefix + str(i)
 					

@@ -24,7 +24,7 @@ from lens_flare_utils import *
 def newEmpty(name = "Empty", location = [0, 0, 0], hide = False, type = "PLAIN_AXES"):
 	bpy.ops.object.empty_add(location = location, type = type)
 	empty = bpy.context.object
-	empty.name = name
+	empty.name = getPossibleName(name)
 	if hide:
 		bpy.ops.object.hide_view_set(unselected = False)
 	return empty

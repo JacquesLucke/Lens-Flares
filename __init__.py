@@ -48,6 +48,7 @@ cameraDirectionCalculatorPrefix = "camera direction calculator"
 startElementPrefix = "start element"
 endElementPrefix = "end element"
 flareElementDataPrefix = "flare element data"
+elementDataNamesContainerPrefix = "element data names container"
 
 dofDistanceName = "dof distance"
 plainDistanceName = "plane distance"
@@ -69,6 +70,8 @@ targetPropertyName = "flare target"
 cameraOfFlarePropertyName = "camera of this flare"
 startElementPropertyName = "start element"
 endElementPropertyName = "end element"
+dataElementPropertyName = "data element"
+elementDataNamesContainerPropertyName = "element data names container"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -98,13 +101,17 @@ def newLensFlare(camera, target):
 	startElement = newStartElement(flareControler, camera, startDistanceCalculator)
 	endElement = newEndElement(flareControler, startElement, center, camera)
 	
+	elementDataNamesContainer = newElementDataNamesContainer(flareControler)
+	
 	setCustomProperty(flareControler, startElementPropertyName, startElement.name)
 	setCustomProperty(flareControler, endElementPropertyName, endElement.name)
+	setCustomProperty(flareControler, elementDataNamesContainerPropertyName, elementDataNamesContainer.name)
 	
 	angleCalculator.hide = True
 	startDistanceCalculator.hide = True
 	startElement.hide = True
 	endElement.hide = True
+	elementDataNamesContainer.hide = True
 
 # camera direction calculator
 
@@ -284,6 +291,13 @@ def setEndLocationDrivers(endElement, startElement, center):
 		linkTransformChannelToDriver(driver, "center", center, "LOC_Z")
 		driver.expression = "2*center - start"
 	
+# element data names container
+	
+def newElementDataNamesContainer(flareControler):
+	elementDataNamesContainer = newEmpty(name = elementDataNamesContainerPrefix)
+	makePartOfFlareControler(elementDataNamesContainer, flareControler)
+	setParentWithoutInverse(elementDataNamesContainer, flareControler)
+	return elementDataNamesContainer
 	
 
 # new element
@@ -297,8 +311,10 @@ def newFlareElement(flareControler):
 	endElement = getEndElement(flareControler)
 	
 	elementData = newFlareElementDataEmpty(flareControler, startElement, endElement)
-	
 	flareElement = newFlareElementPlane(image, elementData, flareControler, camera)	
+	
+	makePartOfFlareElement(elementData, elementData)
+	makePartOfFlareElement(flareElement, elementData)
 	
 def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	dataEmpty = newEmpty(name = flareElementDataPrefix)
@@ -425,16 +441,19 @@ def getSelectedFlares():
 	for object in selection:
 		if hasFlareControlerAttribute(object):
 			flareControler = getCorrespondingFlareControler(object)
-			if flareControler is not None and flareControler not in flareControlers: flareControlers.append(flareControler)
+			if flareControler not in flareControlers and flareControler is not None:
+				flareControlers.append(flareControler)
 	return flareControlers
-
-def isFlareControlerActive():
-	return getActiveFlareControler() is not None
 	
-def getActiveFlareControler():
-	active = getActive()
-	if isFlareControler(active): return active
-	else: return None
+def getSelectedFlareElementDatas():	
+	flareElementDatas = []
+	selection = getSelectedObjects()
+	for object in selection:
+		if hasFlareElementAttribute(object):
+			elementData = getCorrespondingDataElement(object)
+			if elementData not in flareElementDatas and elementData is not None:
+				flareElementDatas.append(elementData)
+	return flareElementDatas
 
 def isFlareControler(object):
 	if object is not None:
@@ -469,6 +488,13 @@ def getCorrespondingFlareControler(object):
 def hasFlareControlerAttribute(object):
 	return childOfFlarePropertyName in object
 	
+def makePartOfFlareElement(object, dataElement):
+	setCustomProperty(object, dataElementPropertyName, dataElement.name)
+def getCorrespondingDataElement(object):
+	return bpy.data.objects.get(object[dataElementPropertyName])
+def hasFlareElementAttribute(object):
+	return dataElementPropertyName in object
+	
 	
 	
 # interface
@@ -486,12 +512,16 @@ class LensFlarePanel(bpy.types.Panel):
 		layout.operator("lens_flares.new_lens_flare")
 		
 		flares = getSelectedFlares()
-		for i in range(len(flares)):
-			flare = flares[i]
+		elementDatas = getSelectedFlareElementDatas()
+		for flare in flares:
 			box = layout.box()
 			box.label(flare.name)
 			newElement = box.operator("lens_flares.new_flare_element")
 			newElement.flareControler = flare.name
+			
+			for elementData in elementDatas:
+				if getCorrespondingFlareControler(elementData) == flare:
+					box.label(elementData.name)
 		
 		
 		
