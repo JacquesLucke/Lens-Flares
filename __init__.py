@@ -60,7 +60,8 @@ directionYName = "direction y"
 directionZName = "direction z"
 angleName = "angle"
 startDistanceName = "start distance"
-randomOffsetName = "random offset"
+avoidArtefactsOffsetName = "offset to avoid artefacts"
+currentElementOffsetName = "current offset"
 elementPositionName = "element position"
 planeWidthFactorName = "width factor"
 scaleXName = "scale x"
@@ -88,7 +89,7 @@ directionXPath = getDataPath(directionXName)
 directionYPath = getDataPath(directionYName)
 directionZPath = getDataPath(directionZName)
 dofDistancePath = getDataPath(dofDistanceName)
-randomOffsetPath = getDataPath(randomOffsetName)
+avoidArtefactsOffsetPath = getDataPath(avoidArtefactsOffsetName)
 elementPositionPath = getDataPath(elementPositionName)
 planeWidthFactorPath = getDataPath(planeWidthFactorName)
 scaleXPath = getDataPath(scaleXName)
@@ -104,6 +105,7 @@ flareNamePropertyPath = getDataPath(flareNamePropertyName)
 ###################################
 
 def newLensFlare(camera, target):
+	setCurrentOffsetPropertyOnCamera(camera)
 	center = getCenterEmpty(camera)
 	flareControler = newFlareControler(camera, target, center)	
 	setCustomProperty(target, linkToFlareControlerPropertyName, flareControler.name)
@@ -125,6 +127,10 @@ def newLensFlare(camera, target):
 	startElement.hide = True
 	endElement.hide = True
 	elementDataNamesContainer.hide = True
+	
+def setCurrentOffsetPropertyOnCamera(camera):
+	if currentElementOffsetName not in camera:
+		setCustomProperty(camera, currentElementOffsetName, -0.002)
 
 # camera direction calculator
 
@@ -320,10 +326,11 @@ def newElementDataNamesContainer(flareControler):
 	
 def newFlareElement(flareControler, image, name):
 	camera = getCameraFromFlareControler(flareControler)
+	camera[currentElementOffsetName] += 0.00003
 	startElement = getStartElement(flareControler)
 	endElement = getEndElement(flareControler)
 	
-	elementData = newFlareElementDataEmpty(flareControler, startElement, endElement)
+	elementData = newFlareElementDataEmpty(flareControler, startElement, endElement, camera)
 	flareElement = newFlareElementPlane(image, elementData, flareControler, camera)	
 	
 	setCustomProperty(elementData, elementPlainNamePropertyName, flareElement.name)
@@ -338,14 +345,14 @@ def newFlareElement(flareControler, image, name):
 	
 	return (elementData, flareElement)
 	
-def newFlareElementDataEmpty(flareControler, startElement, endElement):
+def newFlareElementDataEmpty(flareControler, startElement, endElement, camera):
 	dataEmpty = newEmpty(name = flareElementDataPrefix)
 	makePartOfFlareControler(dataEmpty, flareControler)
 	dataEmpty.empty_draw_size = 0.01
 	
 	setParentWithoutInverse(dataEmpty, flareControler)
 	setCustomProperty(dataEmpty, elementDataNamePropertyName, "Glow", description = "This name shows up in the element list.")
-	setCustomProperty(dataEmpty, randomOffsetName, getRandom(-0.001, 0.001), description = "Random offset of every object to avoid overlapping.")
+	setCustomProperty(dataEmpty, avoidArtefactsOffsetName, camera[currentElementOffsetName], description = "Random offset of every object to avoid overlapping.")
 	setCustomProperty(dataEmpty, elementPositionName, 0.2, description = "Relative element position. 0: element is on target; 1: opposite side")
 	setCustomProperty(dataEmpty, scaleXName, 1.0, min = 0.0, description = "Width of this element.")
 	setCustomProperty(dataEmpty, scaleYName, 1.0, min = 0.0, description = "Height of this element.")
@@ -362,22 +369,19 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement):
 		linkTransformChannelToDriver(driver, "start", startElement, "LOC_X")
 		linkTransformChannelToDriver(driver, "end", endElement, "LOC_X")
 		linkFloatPropertyToDriver(driver, "position", dataEmpty, elementPositionPath)
-		linkFloatPropertyToDriver(driver, "random", dataEmpty, randomOffsetPath)
-		driver.expression = "start * (1-position) + end * position + random"
+		driver.expression = "start * (1-position) + end * position"
 		
 		driver = newDriver(dataEmpty, constraintPath + val + "_y")
 		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Y")
 		linkTransformChannelToDriver(driver, "end", endElement, "LOC_Y")
 		linkFloatPropertyToDriver(driver, "position", dataEmpty, elementPositionPath)
-		linkFloatPropertyToDriver(driver, "random", dataEmpty, randomOffsetPath)
-		driver.expression = "start * (1-position) + end * position + random"
+		driver.expression = "start * (1-position) + end * position"
 		
 		driver = newDriver(dataEmpty, constraintPath + val + "_z")
 		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Z")
 		linkTransformChannelToDriver(driver, "end", endElement, "LOC_Z")
 		linkFloatPropertyToDriver(driver, "position", dataEmpty, elementPositionPath)
-		linkFloatPropertyToDriver(driver, "random", dataEmpty, randomOffsetPath)
-		driver.expression = "start * (1-position) + end * position + random"
+		driver.expression = "start * (1-position) + end * position"
 		
 	return dataEmpty
 
@@ -421,6 +425,20 @@ def newFlareElementPlane(image, elementData, flareControler, camera):
 	constraint = plane.constraints.new(type = "LIMIT_ROTATION")
 	constraint.owner_space = "LOCAL"
 	constraint.use_limit_y = True
+	
+	constraint = plane.constraints.new(type = "LIMIT_LOCATION")
+	constraint.owner_space = "LOCAL"
+	constraint.use_min_z = True
+	constraint.use_max_z = True
+	constraintPath = 'constraints["' + constraint.name + '"]'
+	driver = newDriver(plane, constraintPath + ".min_z")
+	linkFloatPropertyToDriver(driver, "offset", elementData, avoidArtefactsOffsetPath)
+	linkDistanceToDriver(driver, "distance", elementData, camera)
+	driver.expression = "offset*distance"
+	driver = newDriver(plane, constraintPath + ".max_z")
+	linkDistanceToDriver(driver, "distance", elementData, camera)
+	linkFloatPropertyToDriver(driver, "offset", elementData, avoidArtefactsOffsetPath)
+	driver.expression = "offset*distance"
 	
 	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value", type = "SUM")
 	linkFloatPropertyToDriver(driver, "var", elementData, intensityPath)
