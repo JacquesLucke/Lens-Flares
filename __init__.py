@@ -328,7 +328,7 @@ def newElementDataNamesContainer(flareControler):
 	
 def newFlareElement(flareControler, image, name):
 	camera = getCameraFromFlareControler(flareControler)
-	camera[currentElementOffsetName] += 0.00003
+	camera[currentElementOffsetName] += 0.0003
 	startElement = getStartElement(flareControler)
 	endElement = getEndElement(flareControler)
 	
