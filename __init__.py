@@ -62,6 +62,8 @@ planeWidthFactorName = "width factor"
 scaleXName = "scale x"
 scaleYName = "scale y"
 trackToCenterInfluenceName = "track to center influence"
+intensityNodeName = "intensity"
+intensityName = "intensity"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -75,6 +77,7 @@ planeWidthFactorPath = getDataPath(planeWidthFactorName)
 scaleXPath = getDataPath(scaleXName)
 scaleYPath = getDataPath(scaleYName)
 trackToCenterInfluencePath = getDataPath(trackToCenterInfluenceName)
+intensityPath = getDataPath(intensityName)
 
 
 # new lens flare
@@ -293,6 +296,7 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	setCustomProperty(dataEmpty, scaleXName, 1.0)
 	setCustomProperty(dataEmpty, scaleYName, 1.0)
 	setCustomProperty(dataEmpty, trackToCenterInfluenceName, 0.0, min = 0.0, max = 1.0)
+	setCustomProperty(dataEmpty, intensityName, 1.0, min = 0.0)
 	
 	constraint = dataEmpty.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
@@ -358,6 +362,9 @@ def newFlareElementPlane(image, elementData, camera):
 	driver = newDriver(plane, constraintPath + ".influence", type = "SUM")
 	linkFloatPropertyToDriver(driver, "var", elementData, trackToCenterInfluencePath)
 	
+	driver = newDriver(plane.material_slots[0].material.node_tree.nodes[intensityNodeName].inputs[1], "default_value", type = "SUM")
+	linkFloatPropertyToDriver(driver, "var", elementData, intensityPath)
+	
 	return plane
 	
 def newCyclesFlareMaterial(image):
@@ -368,20 +375,23 @@ def newCyclesFlareMaterial(image):
 	textureCoordinatesNode = newTextureCoordinatesNode(nodeTree)
 	imageNode = newImageTextureNode(nodeTree)
 	toBw = newRgbToBwNode(nodeTree)
-	mixColor = newColorMixNode(nodeTree, type = "DIVIDE", factor = 1)
+	mixColor = newColorMixNode(nodeTree, type = "DIVIDE", factor = 1.0)
 	emission = newEmissionNode(nodeTree)
+	intensityNode = newMathNode(nodeTree, type = "MULTIPLY", default = 1.0)
 	transparent = newTransparentNode(nodeTree)
 	mixShader = newMixShader(nodeTree)
 	output = newOutputNode(nodeTree)
 	
 	imageNode.image = image
+	intensityNode.name = intensityNodeName
 	
 	newNodeLink(nodeTree, textureCoordinatesNode.outputs["Generated"], imageNode.inputs[0])
 	newNodeLink(nodeTree, imageNode.outputs[0], toBw.inputs[0])
 	newNodeLink(nodeTree, imageNode.outputs[0], mixColor.inputs[1])
 	newNodeLink(nodeTree, toBw.outputs[0], mixColor.inputs[2])
 	newNodeLink(nodeTree, mixColor.outputs[0], emission.inputs[0])
-	linkToMixShader(nodeTree, transparent.outputs[0], emission.outputs[0], mixShader, factor = imageNode.outputs[0])
+	newNodeLink(nodeTree, imageNode.outputs[0], intensityNode.inputs[0])
+	linkToMixShader(nodeTree, transparent.outputs[0], emission.outputs[0], mixShader, factor = intensityNode.outputs[0])
 	newNodeLink(nodeTree, mixShader.outputs[0], output.inputs[0])
 	return material
 	
