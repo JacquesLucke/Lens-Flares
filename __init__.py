@@ -327,13 +327,13 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	dataEmpty.empty_draw_size = 0.01
 	
 	setParentWithoutInverse(dataEmpty, flareControler)
-	setCustomProperty(dataEmpty, elementNamePropertyName, "Glow")
-	setCustomProperty(dataEmpty, randomOffsetName, getRandom(-0.01, 0.01))
-	setCustomProperty(dataEmpty, elementPositionName, 0.2)
-	setCustomProperty(dataEmpty, scaleXName, 1.0)
-	setCustomProperty(dataEmpty, scaleYName, 1.0)
-	setCustomProperty(dataEmpty, trackToCenterInfluenceName, 0.0, min = 0.0, max = 1.0)
-	setCustomProperty(dataEmpty, intensityName, 1.0, min = 0.0)
+	setCustomProperty(dataEmpty, elementNamePropertyName, "Glow", description = "This name shows up in the element list.")
+	setCustomProperty(dataEmpty, randomOffsetName, getRandom(-0.01, 0.01), description = "Random offset of every object to avoid overlapping.")
+	setCustomProperty(dataEmpty, elementPositionName, 0.2, description = "Relative element position. 0: element is on target; 1: opposite side")
+	setCustomProperty(dataEmpty, scaleXName, 1.0, description = "Width of this element.")
+	setCustomProperty(dataEmpty, scaleYName, 1.0, description = "Height of this element.")
+	setCustomProperty(dataEmpty, trackToCenterInfluenceName, 0.0, min = 0.0, max = 1.0, description = "0: normal; 1: rotate element to center")
+	setCustomProperty(dataEmpty, intensityName, 1.0, min = 0.0, description = "Brightness of this element.")
 	
 	constraint = dataEmpty.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
@@ -399,6 +399,10 @@ def newFlareElementPlane(image, elementData, flareControler, camera):
 	constraintPath = 'constraints["' + constraint.name + '"]'
 	driver = newDriver(plane, constraintPath + ".influence", type = "SUM")
 	linkFloatPropertyToDriver(driver, "var", elementData, trackToCenterInfluencePath)
+	
+	constraint = plane.constraints.new(type = "LIMIT_ROTATION")
+	constraint.owner_space = "LOCAL"
+	constraint.use_limit_y = True
 	
 	driver = newDriver(plane.material_slots[0].material.node_tree.nodes[intensityNodeName].inputs[1], "default_value", type = "SUM")
 	linkFloatPropertyToDriver(driver, "var", elementData, intensityPath)
@@ -528,6 +532,7 @@ class LensFlarePanel(bpy.types.Panel):
 					subBox = box.box()
 					subBox.prop(data, elementNamePropertyPath, text = "Name")
 					subBox.prop(data, elementPositionPath, text = "Position")
+					subBox.prop(data, trackToCenterInfluencePath, text = "Center Rotation Influence")
 					subBox.prop(data, intensityPath, text = "Intensity")
 					
 					col = subBox.column(align = True)
@@ -542,7 +547,7 @@ class LensFlarePanel(bpy.types.Panel):
 class NewLensFlare(bpy.types.Operator):
 	bl_idname = "lens_flares.new_lens_flare"
 	bl_label = "New Lens Flare"
-	bl_description = "Create a new Lens Flare."
+	bl_description = "Create a new Lens Flare on active object."
 	
 	def execute(self, context):
 		newLensFlare(getActiveCamera(), getActive())
