@@ -4,24 +4,23 @@ mail@jlucke.com
 
 Created by Jacques Lucke
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import sys, os, bpy, mathutils, inspect
 from bpy.app.handlers import persistent
-sys.path.append(os.path.dirname(__file__)) 
-from lens_flare_image_data import *
+sys.path.append(os.path.dirname(__file__))
 from lens_flare_utils import *
 from lens_flare_create_object_utils import *
 from lens_flare_constraint_utils import *
@@ -31,14 +30,17 @@ from lens_flare_material_and_node_utils import *
 
 
 bl_info = {
-    "name":        "Lens Flares",
-    "description": "",
-    "author":      "Jacques Lucke",
-    "version":     (0, 0, 1),
-    "blender":     (2, 7, 1),
-    "location":    "View 3D > Tool Shelf",
-    "category":    "3D View"
-    }
+	"name":        "Lens Flares",
+	"description": "",
+	"author":      "Jacques Lucke",
+	"version":     (0, 0, 1),
+	"blender":     (2, 7, 1),
+	"location":    "View 3D > Tool Shelf",
+	"category":    "3D View",
+	"warning":	   "alpha"
+	}
+	
+elementsFolder = inspect.getfile(inspect.currentframe())[0:-len("__init__.py")] + "elements\\"
 	
 flareControlerPrefix = "flare controler"
 angleCalculatorPrefix = "angle calculator"
@@ -312,8 +314,7 @@ def newElementDataNamesContainer(flareControler):
 # new element
 #########################################
 	
-def newFlareElement(flareControler):
-	image = getElementImage("GLOW_1")
+def newFlareElement(flareControler, image, name):
 	camera = getCameraFromFlareControler(flareControler)
 	startElement = getStartElement(flareControler)
 	endElement = getEndElement(flareControler)
@@ -328,6 +329,8 @@ def newFlareElement(flareControler):
 	
 	elementDataNamesContainer = getElementDataNamesContainer(flareControler)
 	appendObjectReference(elementDataNamesContainer, elementData)
+	
+	setCustomProperty(elementData, elementDataNamePropertyName, name)
 	
 def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	dataEmpty = newEmpty(name = flareElementDataPrefix)
@@ -624,12 +627,18 @@ class NewFlareElement(bpy.types.Operator):
 	bl_idname = "lens_flares.new_flare_element"
 	bl_label = "New Flare Element"
 	bl_description = "Create a new Element in active Lens Flare."
-	
+
 	flareControler = bpy.props.StringProperty()
-	
+	filepath = bpy.props.StringProperty(subtype="FILE_PATH")
+
 	def execute(self, context):
-		newFlareElement(bpy.data.objects[self.flareControler])
-		return{"FINISHED"}
+		newFlareElement(bpy.data.objects[self.flareControler], getImage(self.filepath), getFileName(self.filepath))
+		return {'FINISHED'}
+
+	def invoke(self, context, event):
+		self.filepath = elementsFolder
+		context.window_manager.fileselect_add(self)
+		return {'RUNNING_MODAL'}
 		
 class SelectFlare(bpy.types.Operator):
 	bl_idname = "lens_flares.select_flare"
@@ -678,8 +687,8 @@ class DeleteFlareElement(bpy.types.Operator):
 		deleteFlareElement(bpy.data.objects[self.elementName])
 		setSelectedObjects(selectionBefore)
 		return{"FINISHED"}
-		
-		
+
+
 		
 # register
 ##################################

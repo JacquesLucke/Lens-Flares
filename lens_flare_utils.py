@@ -18,7 +18,7 @@ Created by Jacques Lucke
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import bpy, random, math, mathutils
+import bpy, random, math, mathutils, os.path
 from bpy_extras.image_utils import load_image
 	
 def getActiveCamera():
@@ -137,4 +137,7 @@ def getPossibleName(prefix):
 	while bpy.data.objects.get(prefix + str(i)) is not None:
 		i += 1
 	return prefix + str(i)
+	
+def getFileName(path):
+	return os.path.splitext(os.path.basename(path))[0]
 					
