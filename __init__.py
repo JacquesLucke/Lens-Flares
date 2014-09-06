@@ -448,6 +448,15 @@ def newCyclesFlareMaterial(image):
 # utils
 ################################
 
+def getAllFlares():
+	flareControlers = []
+	for object in bpy.data.objects:
+		if hasFlareControlerAttribute(object) or hasLinkToFlareControler(object):
+			flareControler = getCorrespondingFlareControler(object)
+			if flareControler not in flareControlers and flareControler is not None:
+				flareControlers.append(flareControler)
+	return flareControlers
+
 def getSelectedFlares():
 	flareControlers = []
 	selection = getSelectedObjects()
@@ -514,21 +523,37 @@ class LensFlarePanel(bpy.types.Panel):
 	
 	def draw(self, context):
 		layout = self.layout		
-		layout.operator("lens_flares.new_lens_flare")
 		
-		flares = getSelectedFlares()
-		for flare in flares:
+		flares = getAllFlares()
+		box = layout.box()
+		if len(flares) == 0: box.label("no flares in this scene", icon = "INFO")
+		else:
+			col = box.column(align = True)
+			for flare in flares:
+				row = col.row(align = True)
+				row.scale_y = 1.35
+				selectFlare = row.operator("lens_flares.select_flare", text = flare.name)
+				selectFlare.flareName = flare.name
+		box.operator("lens_flares.new_lens_flare", icon = 'PLUS')
+			
+		layout.separator()
+			
+		selectedFlares = getSelectedFlares()
+		if len(selectedFlares) > 0:
+			flare = selectedFlares[0]
 			box = layout.box()
 			box.label(flare.name)
 					
 			allDatas = getDataElementsFromFlare(flare)
 			subBox = box.box()
-			col = subBox.column(align = True)
-			for data in allDatas:
-				row = col.row(align = True)
-				row.scale_y = 1.35
-				selectElement = row.operator("lens_flares.select_flare_element", text = data[elementNamePropertyName])
-				selectElement.elementName = data.name
+			if len(allDatas) == 0: subBox.label("no elements on this flare", icon = "INFO")
+			else:
+				col = subBox.column(align = True)
+				for data in allDatas:
+					row = col.row(align = True)
+					row.scale_y = 1.35
+					selectElement = row.operator("lens_flares.select_flare_element", text = data[elementNamePropertyName])
+					selectElement.elementName = data.name
 			newElement = subBox.operator("lens_flares.new_flare_element", icon = 'PLUS')
 			newElement.flareControler = flare.name
 			
@@ -567,6 +592,17 @@ class NewFlareElement(bpy.types.Operator):
 	
 	def execute(self, context):
 		newFlareElement(bpy.data.objects[self.flareControler])
+		return{"FINISHED"}
+		
+class SelectFlare(bpy.types.Operator):
+	bl_idname = "lens_flares.select_flare"
+	bl_label = "Select Flare"
+	bl_description = "Select this flare to see its elements."
+	
+	flareName = bpy.props.StringProperty()
+	
+	def execute(self, context):
+		onlySelect(bpy.data.objects[self.flareName])
 		return{"FINISHED"}
 		
 class SelectFlareElement(bpy.types.Operator):
