@@ -65,6 +65,7 @@ trackToCenterInfluenceName = "track to center influence"
 intensityNodeName = "intensity"
 intensityName = "intensity"
 childOfFlarePropertyName = "child of flare"
+targetPropertyName = "flare target"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -167,6 +168,7 @@ def setCenterDistance(center, camera):
 def newFlareControler(camera, target, center):
 	flareControler = newEmpty(name = flareControlerPrefix)
 	makePartOfFlareControler(flareControler, flareControler)
+	setObjectReference(flareControler, targetPropertyName, target)
 	setParentWithoutInverse(flareControler, camera)	
 	lockCurrentLocalLocation(flareControler)
 	setTargetDirectionProperties(flareControler, target)
@@ -452,7 +454,7 @@ def getEndElement(flareControler):
 	
 def isEndElement(object):
 	return hasPrefix(object.name, endElementPrefix) and isFlareControler(object.parent)
-	
+
 def makePartOfFlareControler(object, flareControler):
 	setCustomProperty(object, childOfFlarePropertyName, flareControler.name)
 	
