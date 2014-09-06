@@ -108,6 +108,11 @@ flareNamePropertyPath = getDataPath(flareNamePropertyName)
 # new lens flare
 ###################################
 
+def newLensFlareFromDictionary(camera, target, flareDataDictionary):
+	flareControler = newFlareControler(camera, target)
+	flareControler[flareNamePropertyName] = flareDataDictionary[flareNamePropertyName]
+	flareControler[intensityName] = flareDataDictionary[intensityName]
+
 def newLensFlare(camera, target):
 	setCurrentOffsetPropertyOnCamera(camera)
 	center = getCenterEmpty(camera)
@@ -131,6 +136,8 @@ def newLensFlare(camera, target):
 	startElement.hide = True
 	endElement.hide = True
 	elementEmptyNamesContainer.hide = True
+	
+	return flareControler
 	
 def setCurrentOffsetPropertyOnCamera(camera):
 	if currentElementOffsetName not in camera:
