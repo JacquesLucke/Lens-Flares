@@ -283,10 +283,9 @@ def setEndLocationDrivers(endElement, startElement, center):
 # new element
 #########################################
 	
-def newFlareElement():
+def newFlareElement(flareControler):
 	imagePath = inspect.getfile(inspect.currentframe())[0:-len("__init__.py")] + "elements/glow1.jpg"
 	image = getImage(imagePath)
-	flareControler = getActiveFlareControler()
 	camera = getCameraFromFlareControler(flareControler)
 	startElement = getStartElement(flareControler)
 	endElement = getEndElement(flareControler)
@@ -439,12 +438,6 @@ def isFlareControler(object):
 	
 def getCameraFromFlareControler(flareControler):
 	return flareControler.parent
-
-def isCenterEmpty(object):
-	return hasPrefix(object.name, cameraCenterPrefix) and isCameraObject(object.parent)
-	
-def getCameraFromCenter(center):
-	return center.parent
 	
 def getStartElement(flareControler):
 	for object in bpy.data.objects:
@@ -460,18 +453,17 @@ def getEndElement(flareControler):
 		if isEndElement(object) and object.parent == flareControler:
 			return object
 	return None
-	
 def isEndElement(object):
 	return hasPrefix(object.name, endElementPrefix) and isFlareControler(object.parent)
 
 def makePartOfFlareControler(object, flareControler):
 	setCustomProperty(object, childOfFlarePropertyName, flareControler.name)
-def hasFlareControlerAttribute(object):
-	return childOfFlarePropertyName in object
 def getCorrespondingFlareControler(object):
 	if hasFlareControlerAttribute(object):
 		return bpy.data.objects[object[childOfFlarePropertyName]]
 	return None
+def hasFlareControlerAttribute(object):
+	return childOfFlarePropertyName in object
 	
 	
 	
@@ -516,7 +508,7 @@ class NewFlareElement(bpy.types.Operator):
 		return isFlareControlerActive()
 	
 	def execute(self, context):
-		newFlareElement()
+		newFlareElement(getActiveFlareControler())
 		return{"FINISHED"}
 		
 		
