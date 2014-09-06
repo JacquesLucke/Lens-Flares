@@ -524,6 +524,15 @@ class LensFlarePanel(bpy.types.Panel):
 				selectElement.elementName = data.name
 			newElement = subBox.operator("lens_flares.new_flare_element", icon = 'PLUS')
 			newElement.flareControler = flare.name
+			
+			for data in allDatas:
+				if data.select:
+					subBox = box.box()
+					subBox.label(data.name)
+					subBox.prop(data, elementPositionPath)
+					subBox.prop(data, intensityPath)
+					subBox.prop(data, scaleXPath)
+					subBox.prop(data, scaleYPath)
 		
 		
 		
