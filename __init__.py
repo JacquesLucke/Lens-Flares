@@ -85,11 +85,11 @@ intensityPath = getDataPath(intensityName)
 # new lens flare
 ###################################
 
-def newLensFlare():
-	target = getActive()
+def newLensFlare(target):
 	camera = getActiveCamera()
 	center = getCenterEmpty(camera)
 	flareControler = newFlareControler(camera, target, center)	
+	makePartOfFlareControler(target, flareControler)
 	angleCalculator = newAngleCalculator(flareControler, camera, target, center)
 	startDistanceCalculator = newStartDistanceCalculator(flareControler, angleCalculator, center, camera)
 	
@@ -419,7 +419,7 @@ def getSelectedFlares():
 	for object in selection:
 		if hasFlareControlerAttribute(object):
 			flareControler = getCorrespondingFlareControler(object)
-			if flareControler not in flareControlers: flareControlers.append(flareControler)
+			if flareControler is not None and flareControler not in flareControlers: flareControlers.append(flareControler)
 	return flareControlers
 
 def isFlareControlerActive():
@@ -459,9 +459,7 @@ def isEndElement(object):
 def makePartOfFlareControler(object, flareControler):
 	setCustomProperty(object, childOfFlarePropertyName, flareControler.name)
 def getCorrespondingFlareControler(object):
-	if hasFlareControlerAttribute(object):
-		return bpy.data.objects[object[childOfFlarePropertyName]]
-	return None
+	return bpy.data.objects.get(object[childOfFlarePropertyName])
 def hasFlareControlerAttribute(object):
 	return childOfFlarePropertyName in object
 	
@@ -500,7 +498,7 @@ class NewLensFlare(bpy.types.Operator):
 	bl_description = "Create a new Lens Flare."
 	
 	def execute(self, context):
-		newLensFlare()
+		newLensFlare(getActive())
 		return{"FINISHED"}
 		
 class NewFlareElement(bpy.types.Operator):
@@ -509,10 +507,6 @@ class NewFlareElement(bpy.types.Operator):
 	bl_description = "Create a new Element in active Lens Flare."
 	
 	flareControler = bpy.props.StringProperty()
-	
-	@classmethod
-	def poll(self, context):
-		return isFlareControlerActive()
 	
 	def execute(self, context):
 		newFlareElement(bpy.data.objects[self.flareControler])
