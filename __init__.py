@@ -580,11 +580,13 @@ def deleteFlareElement(elementData):
 	
 def duplicateFlareElement(elementData):
 	flareControler = getCorrespondingFlareControler(elementData)
+	plane = getPlaneFromData(elementData)
 	image = getImageFromImageData(elementData)
 	name = elementData[elementDataNamePropertyName]
-	(elementDataNew, flareElementNew) = newFlareElement(flareControler, image, name)
+	(elementDataNew, plainNew) = newFlareElement(flareControler, image, name)
 	for propertyName in [elementPositionName, scaleXName, scaleYName, trackToCenterInfluenceName, intensityName, additionalRotationName]:
 		elementDataNew[propertyName] = elementData[propertyName]
+	getNodeWithNameInObject(plainNew, colorMultiplyNodeName).inputs[2].default_value = getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value
 	
 	
 	
