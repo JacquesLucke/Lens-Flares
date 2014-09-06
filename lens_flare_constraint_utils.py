@@ -79,8 +79,8 @@ def getObjectReferences(object):
 	
 def cleanReferenceList(object):
 	for constraint in object.constraints:
-		if contraint.type == "CHILD_OF":
-			if contraint.target is None: object.constraints.remove(contraint)
+		if constraint.type == "CHILD_OF":
+			if constraint.target is None: object.constraints.remove(constraint)
 		
 def getObjectReference(object, name):
 	if isObjectReferenceSet(object, name):

@@ -543,8 +543,10 @@ def deleteFlare(flareControler):
 	delete(flareControler)
 	
 def deleteFlareElement(elementData):
+	flareControler = getCorrespondingFlareControler(elementData)
 	delete(getPlaneFromData(elementData))
 	delete(elementData)
+	cleanReferenceList(getElementDataNamesContainer(flareControler))
 	
 	
 # interface
@@ -699,6 +701,7 @@ class DeleteFlareElement(bpy.types.Operator):
 		deleteFlareElement(bpy.data.objects[self.elementName])
 		setSelectedObjects(selectionBefore)
 		return{"FINISHED"}
+
 
 
 		
