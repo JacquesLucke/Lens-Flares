@@ -67,6 +67,8 @@ elementPositionName = "element position"
 planeWidthFactorName = "width factor"
 scaleXName = "scale x"
 scaleYName = "scale y"
+imagePathName = "image path"
+colorMultiplyName = "multiply color"
 additionalRotationName = "additional rotation"
 trackToCenterInfluenceName = "track to center influence"
 intensityNodeName = "intensity"
@@ -324,8 +326,23 @@ def newElementDataNamesContainer(flareControler):
 	return elementDataNamesContainer
 	
 
+	
+	
 # new element
 #########################################
+
+def newFlareElementFromDictionary(flareControler, elementDataDictionary):
+	name = elementDataDictionary[elementDataNamePropertyName]
+	image = getImage(elementDataDictionary[imagePathName])
+	(elementData, plane) = newFlareElement(flareControler, image, name)
+	
+	elementData[elementPositionName] = elementDataDictionary[elementPositionName]
+	elementData[scaleXName] = elementDataDictionary[scaleXName]
+	elementData[scaleYName] = elementDataDictionary[scaleYName]
+	elementData[trackToCenterInfluenceName] = elementDataDictionary[trackToCenterInfluenceName]
+	elementData[intensityName] = elementDataDictionary[intensityName]
+	elementData[additionalRotationName] = elementDataDictionary[additionalRotationName]
+	getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value = elementDataDictionary[colorMultiplyName]
 	
 def newFlareElement(flareControler, image, name):
 	camera = getCameraFromFlareControler(flareControler)
@@ -567,6 +584,18 @@ def getImageFromElementData(data):
 	node = getNodeWithNameInObject(plane, imageNodeName)
 	return node.image
 	
+def getElementDataDictionaryFromElement(element):
+	plane = getPlaneFromData(element)
+	return { 	elementPositionName : element[elementPositionName],
+				elementDataNamePropertyName : element[elementDataNamePropertyName],
+				imagePathName : getImageFromElementData(element).filepath,
+				scaleXName : element[scaleXName],
+				scaleYName : element[scaleYName],
+				trackToCenterInfluenceName : element[trackToCenterInfluenceName],
+				intensityName : element[intensityName],
+				additionalRotationName : element[additionalRotationName],
+				colorMultiplyName : getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value }
+	
 def deleteFlare(flareControler):
 	for object in bpy.data.objects:
 		if isPartOfFlareControler(object, flareControler) and object != flareControler:
@@ -581,13 +610,8 @@ def deleteFlareElement(elementData):
 	
 def duplicateFlareElement(elementData):
 	flareControler = getCorrespondingFlareControler(elementData)
-	plane = getPlaneFromData(elementData)
-	image = getImageFromElementData(elementData)
-	name = elementData[elementDataNamePropertyName]
-	(elementDataNew, planeNew) = newFlareElement(flareControler, image, name)
-	for propertyName in [elementPositionName, scaleXName, scaleYName, trackToCenterInfluenceName, intensityName, additionalRotationName]:
-		elementDataNew[propertyName] = elementData[propertyName]
-	getNodeWithNameInObject(planeNew, colorMultiplyNodeName).inputs[2].default_value = getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value
+	elementDataDictionary = getElementDataDictionaryFromElement(elementData)
+	newFlareElementFromDictionary(flareControler, elementDataDictionary)
 	
 def saveLensFlare(flareControler, path):
 	flare = ET.Element("Flare")
