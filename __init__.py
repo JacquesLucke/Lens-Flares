@@ -64,6 +64,7 @@ scaleYName = "scale y"
 trackToCenterInfluenceName = "track to center influence"
 intensityNodeName = "intensity"
 intensityName = "intensity"
+childOfFlarePropertyName = "child of flare"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -165,6 +166,7 @@ def setCenterDistance(center, camera):
 
 def newFlareControler(camera, target, center):
 	flareControler = newEmpty(name = flareControlerPrefix)
+	makePartOfFlareControler(flareControler, flareControler)
 	setParentWithoutInverse(flareControler, camera)	
 	lockCurrentLocalLocation(flareControler)
 	setTargetDirectionProperties(flareControler, target)
@@ -179,6 +181,7 @@ def setTargetDirectionProperties(flareControler, target):
 
 def newAngleCalculator(flareControler, camera, target, center):
 	angleCalculator = newEmpty(name = angleCalculatorPrefix)
+	makePartOfFlareControler(angleCalculator, flareControler)
 	setParentWithoutInverse(angleCalculator, flareControler)
 	setTargetAngleProperty(angleCalculator, flareControler, getCameraDirectionCalculator(camera))
 	return angleCalculator
@@ -198,6 +201,7 @@ def setTargetAngleProperty(angleCalculator, flareControler, cameraDirectionCalcu
 	
 def newStartDistanceCalculator(flareControler, angleCalculator, center, camera):
 	startDistanceCalculator = newEmpty(name = startDistanceCalculatorPrefix)
+	makePartOfFlareControler(startDistanceCalculator, flareControler)
 	setParentWithoutInverse(startDistanceCalculator, flareControler)
 	setStartDistanceProperty(startDistanceCalculator, angleCalculator, center, camera)
 	return startDistanceCalculator
@@ -213,6 +217,7 @@ def setStartDistanceProperty(startDistanceCalculator, angleCalculator, center, c
 	
 def newStartElement(flareControler, camera, startDistanceCalculator):
 	startElement = newEmpty(name = startElementPrefix)
+	makePartOfFlareControler(startElement, flareControler)
 	setParentWithoutInverse(startElement, flareControler)
 	setStartLocationDrivers(startElement, camera, flareControler, startDistanceCalculator)
 	return startElement
@@ -245,6 +250,7 @@ def setStartLocationDrivers(startElement, camera, flareControler, startDistanceC
 
 def newEndElement(flareControler, startElement, center, camera):
 	endElement = newEmpty(name = endElementPrefix)
+	makePartOfFlareControler(endElement, flareControler)
 	setParentWithoutInverse(endElement, flareControler)
 	setEndLocationDrivers(endElement, startElement, center)
 	return endElement
@@ -285,10 +291,11 @@ def newFlareElement():
 	
 	elementData = newFlareElementDataEmpty(flareControler, startElement, endElement)
 	
-	flareElement = newFlareElementPlane(image, elementData, camera)	
+	flareElement = newFlareElementPlane(image, elementData, flareControler, camera)	
 	
 def newFlareElementDataEmpty(flareControler, startElement, endElement):
 	dataEmpty = newEmpty(name = flareElementDataPrefix)
+	makePartOfFlareControler(dataEmpty, flareControler)
 	
 	setParentWithoutInverse(dataEmpty, flareControler)
 	setCustomProperty(dataEmpty, randomOffsetName, getRandom(-0.01, 0.01))
@@ -326,8 +333,9 @@ def newFlareElementDataEmpty(flareControler, startElement, endElement):
 		
 	return dataEmpty
 
-def newFlareElementPlane(image, elementData, camera):
+def newFlareElementPlane(image, elementData, flareControler, camera):
 	plane = newPlane(name = flareElementPrefix, size = 0.1)
+	makePartOfFlareControler(plane, flareControler)
 	setCustomProperty(plane, planeWidthFactorName, image.size[0] / image.size[1])
 	makeOnlyVisibleToCamera(plane)
 	material = newCyclesFlareMaterial(image)
@@ -444,6 +452,9 @@ def getEndElement(flareControler):
 	
 def isEndElement(object):
 	return hasPrefix(object.name, endElementPrefix) and isFlareControler(object.parent)
+	
+def makePartOfFlareControler(object, flareControler):
+	setCustomProperty(object, childOfFlarePropertyName, flareControler.name)
 	
 	
 	
