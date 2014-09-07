@@ -83,7 +83,7 @@ def isTextObject(object):
 	return False
 	
 def isCameraObject(object):
-	return hasattr(object, "dof_object")
+	return bpy.data.cameras.get(object.name) is not None
 def getCameraFromObject(object):
 	return bpy.data.cameras[object.name]
 	

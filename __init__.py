@@ -573,9 +573,12 @@ def getElementEmptyObjects(flareControler):
 def getElementEmptyNamesContainer(flareControler):
 	return bpy.data.objects[flareControler[elementEmptyNamesContainerPropertyName]]
 
+def isPartOfAnyFlareControler(object):
+	return getCorrespondingFlareControler(object) is not None
 def makePartOfFlareControler(object, flareControler):
 	setCustomProperty(object, childOfFlarePropertyName, flareControler.name)
 def isPartOfFlareControler(object, flareControler):
+	if object is None or flareControler is None: return False
 	return object.get(childOfFlarePropertyName) == flareControler.name
 def getCorrespondingFlareControler(object):
 	if hasFlareControlerAttribute(object): return bpy.data.objects.get(object[childOfFlarePropertyName])
@@ -714,7 +717,10 @@ def setActiveElementName(elementName):
 def isElementActive():
 	return getActiveElement() is not None
 def getActiveElement():
-	return bpy.data.objects.get(activeElementName)
+	activeFlare = getActiveFlare()
+	activeElement = bpy.data.objects.get(activeElementName)
+	if isPartOfFlareControler(activeElement, activeFlare): return activeElement
+	return None
 
 	
 	
@@ -832,8 +838,11 @@ class NewLensFlare(bpy.types.Operator):
 	bl_description = "Create a new Lens Flare on active object."
 	
 	def execute(self, context):
-		flareControler = newLensFlare(getActiveCamera(), getActive())
-		setActiveFlareName(flareControler.name)
+		activeObject = getActive()
+		if activeObject is not None:
+			if not (isPartOfAnyFlareControler(activeObject) or isCameraObject(activeObject)):
+				flareControler = newLensFlare(getActiveCamera(), activeObject)
+				setActiveFlareName(flareControler.name)
 		return{"FINISHED"}
 		
 class NewFlareElement(bpy.types.Operator):
