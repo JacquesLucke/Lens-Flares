@@ -799,8 +799,10 @@ class LensFlaresPanel(bpy.types.Panel):
 				saveFlare.flareName = flare.name
 				deleteFlare = row.operator("lens_flares.delete_lens_flare", text = "", icon = "X")
 				deleteFlare.flareName = flare.name
-		layout.operator("lens_flares.new_lens_flare", icon = 'PLUS')
-		layout.operator("lens_flares.load_lens_flare", icon = 'PLUS')
+				
+		row = layout.row(align = True)
+		row.operator("lens_flares.new_lens_flare", icon = 'NEW', text = "New")
+		row.operator("lens_flares.load_lens_flare", icon = 'FILE_FOLDER', text = "Load")
 				
 class LensFlareSettingsPanel(bpy.types.Panel):
 	bl_space_type = "VIEW_3D"
@@ -973,6 +975,7 @@ class SelectFlareElement(bpy.types.Operator):
 	
 	def execute(self, context):
 		setActiveElementName(self.elementName)
+		onlySelect(bpy.data.objects.get(self.elementName))
 		return{"FINISHED"}
 		
 class DeleteLensFlare(bpy.types.Operator):
