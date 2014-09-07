@@ -111,8 +111,9 @@ flareNamePropertyPath = getDataPath(flareNamePropertyName)
 ###################################
 
 def newLensFlareFromDictionary(camera, target, flareDataDictionary):
-	flareControler = newFlareControler(camera, target)
+	flareControler = newLensFlare(camera, target)
 	setFlareDataDictionaryOnFlare(flareControler, flareDataDictionary)
+	return flareControler
 
 def newLensFlare(camera, target):
 	setCurrentOffsetPropertyOnCamera(camera)
@@ -656,6 +657,19 @@ def duplicateFlareElement(elementEmpty):
 	elementDataDictionary = getElementDataDictionaryFromElement(elementEmpty)
 	newFlareElementFromDictionary(flareControler, elementDataDictionary)
 	
+def duplicateLensFlare(flareControler):
+	flareDataDictionary = getFlareDataDictionaryFromFlare(flareControler)
+	elements = getElementEmptyObjects(flareControler)
+	elementDatas = []
+	for element in elements:
+		elementDatas.append(getElementDataDictionaryFromElement(element))
+	generateLensFlare(getActiveCamera(), getActive(), flareDataDictionary, elementDatas)
+	
+def generateLensFlare(camera, target, flareDataDictionary, elementDatas):
+	flareControler = newLensFlareFromDictionary(camera, target, flareDataDictionary)
+	for elementData in elementDatas:
+		newFlareElementFromDictionary(flareControler, elementData)
+	
 def saveLensFlare(flareControler, path):
 	flare = ET.Element("Flare")
 	flare.set("name", flareControler[flareNamePropertyName])
@@ -730,7 +744,11 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 		target = getTargetEmpty(flare)
 		self.bl_label = "Settings: " + flare[flareNamePropertyName]
 		
-		layout.prop(flare, flareNamePropertyPath, text = "Name")
+		row = layout.row(align = True)
+		row.prop(flare, flareNamePropertyPath, text = "Name")
+		duplicateFlare = row.operator("lens_flares.duplicate_lens_flare", text = "", icon = "NEW")
+		duplicateFlare.flareName = flare.name
+		
 		layout.prop(target.constraints[0], 'target', text = "Target")
 		layout.prop(flare, intensityPath, text = "Intensity")
 				
@@ -875,6 +893,17 @@ class DuplicateFlareElement(bpy.types.Operator):
 	
 	def execute(self, context):
 		duplicateFlareElement(bpy.data.objects[self.elementName])
+		return{"FINISHED"}
+		
+class DuplicateLensFlare(bpy.types.Operator):
+	bl_idname = "lens_flares.duplicate_lens_flare"
+	bl_label = "Duplicate Lens Flare"
+	bl_description = "Duplicate this Lens Flare."
+	
+	flareName = bpy.props.StringProperty()
+	
+	def execute(self, context):
+		duplicateLensFlare(bpy.data.objects[self.flareName])
 		return{"FINISHED"}
 		
 		
