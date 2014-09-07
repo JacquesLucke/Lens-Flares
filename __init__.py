@@ -359,6 +359,7 @@ def newFlareElementFromDictionary(flareControler, elementDataDictionary):
 	image = getImage(elementDataDictionary[imagePathName])
 	(elementEmpty, plane) = newFlareElement(flareControler, image, name)
 	setElementDataDictionaryOnElement(elementEmpty, elementDataDictionary)
+	return elementEmpty
 	
 def newFlareElement(flareControler, image, name = "element"):
 	camera = getCameraFromFlareControler(flareControler)
@@ -661,7 +662,8 @@ def deleteFlareElement(elementEmpty):
 def duplicateFlareElement(elementEmpty):
 	flareControler = getCorrespondingFlareControler(elementEmpty)
 	elementDataDictionary = getElementDataDictionaryFromElement(elementEmpty)
-	newFlareElementFromDictionary(flareControler, elementDataDictionary)
+	newElement = newFlareElementFromDictionary(flareControler, elementDataDictionary)
+	return newElement
 	
 def duplicateLensFlare(flareControler):
 	flareDataDictionary = getFlareDataDictionaryFromFlare(flareControler)
@@ -738,14 +740,18 @@ class LensFlaresPanel(bpy.types.Panel):
 		layout = self.layout		
 		
 		flares = getAllFlares()
+		activeFlare = getActiveFlare()
 		if len(flares) == 0: layout.label("no flares in this scene", icon = "INFO")
 		else:
 			col = layout.column(align = True)
 			for flare in flares:
 				row = col.row(align = True)
 				row.scale_y = 1.35
-				selectFlare = row.operator("lens_flares.select_flare", text = flare[flareNamePropertyName])
+				if activeFlare == flare: 
+					selectFlare = row.operator("lens_flares.select_flare", text = flare[flareNamePropertyName], icon = "PINNED")
+				else: selectFlare = row.operator("lens_flares.select_flare", text = flare[flareNamePropertyName])
 				selectFlare.flareName = flare.name
+				
 				saveFlare = row.operator("lens_flares.save_lens_flare", text = "", icon = "SAVE_COPY")
 				saveFlare.flareName = flare.name
 				deleteFlare = row.operator("lens_flares.delete_lens_flare", text = "", icon = "X")
@@ -778,18 +784,21 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 		layout.prop(target.constraints[0], 'target', text = "Target")
 		layout.prop(flare, intensityPath, text = "Intensity")
 				
-		allDatas = getDataElementsFromFlare(flare)
+		elements = getDataElementsFromFlare(flare)
+		activeElement = getActiveElement()
 		box = layout.box()
-		if len(allDatas) == 0: box.label("no elements on this flare", icon = "INFO")
+		if len(elements) == 0: box.label("no elements on this flare", icon = "INFO")
 		else:
 			col = box.column(align = True)
-			for data in allDatas:
+			for element in elements:
 				row = col.row(align = True)
 				row.scale_y = 1.35
-				selectElement = row.operator("lens_flares.select_flare_element", text = data[elementEmptyNamePropertyName])
-				selectElement.elementName = data.name
+				if element == activeElement: 
+					selectElement = row.operator("lens_flares.select_flare_element", text = element[elementEmptyNamePropertyName], icon = "PINNED")
+				else: selectElement = row.operator("lens_flares.select_flare_element", text = element[elementEmptyNamePropertyName])
+				selectElement.elementName = element.name
 				deleteElement = row.operator("lens_flares.delete_flare_element", text = "", icon = "X")
-				deleteElement.elementName = data.name
+				deleteElement.elementName = element.name
 		newElement = box.operator("lens_flares.new_flare_element", icon = 'PLUS')
 		newElement.flareName = flare.name
 				
@@ -935,7 +944,8 @@ class DuplicateFlareElement(bpy.types.Operator):
 	elementName = bpy.props.StringProperty()
 	
 	def execute(self, context):
-		duplicateFlareElement(bpy.data.objects[self.elementName])
+		element = duplicateFlareElement(bpy.data.objects[self.elementName])
+		setActiveElementName(element.name)
 		return{"FINISHED"}
 		
 class DuplicateLensFlare(bpy.types.Operator):
