@@ -110,8 +110,7 @@ flareNamePropertyPath = getDataPath(flareNamePropertyName)
 
 def newLensFlareFromDictionary(camera, target, flareDataDictionary):
 	flareControler = newFlareControler(camera, target)
-	flareControler[flareNamePropertyName] = flareDataDictionary[flareNamePropertyName]
-	flareControler[intensityName] = flareDataDictionary[intensityName]
+	setFlareDataDictionaryOnFlare(flareControler, flareDataDictionary)
 
 def newLensFlare(camera, target):
 	setCurrentOffsetPropertyOnCamera(camera)
@@ -591,6 +590,14 @@ def setImagePathOnElementPlane(plane, imagePath):
 	
 def setMultiplyColorOnElementPlane(plane, color):
 	getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value = color
+	
+def getFlareDataDictionaryFromFlare(flareControler):
+	return {	flareNamePropertyName : flareControler[flareNamePropertyName],
+				intensityName : flareControler[intensityName] }
+				
+def setFlareDataDictionaryOnFlare(flareControler, flareDataDictionary):
+	flareControler[flareNamePropertyName] = flareDataDictionary[flareNamePropertyName]
+	flareControler[intensityName] = flareDataDictionary[intensityName]
 	
 def getElementDataDictionaryFromElement(element):
 	plane = getPlaneFromData(element)
