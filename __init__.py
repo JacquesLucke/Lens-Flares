@@ -41,8 +41,8 @@ bl_info = {
 	"warning":	   "alpha"
 	}
 	
-activeFlareName = None
-activeElementName = None
+activeFlareName = ""
+activeElementName = ""
 	
 elementsFolder = inspect.getfile(inspect.currentframe())[0:-len("__init__.py")] + "elements\\"
 	
@@ -585,8 +585,10 @@ def getCorrespondingFlareControler(object):
 	if hasFlareControlerAttribute(object): return bpy.data.objects.get(object[childOfFlarePropertyName])
 	if hasLinkToFlareControler(object): return bpy.data.objects.get(object[linkToFlareControlerPropertyName])
 def hasFlareControlerAttribute(object):
+	if object is None: return False
 	return childOfFlarePropertyName in object
 def hasLinkToFlareControler(object):
+	if object is None: return False
 	return linkToFlareControlerPropertyName in object
 	
 def makePartOfFlareElement(object, dataElement):
@@ -599,8 +601,8 @@ def hasFlareElementAttribute(object):
 def getTargetEmpty(flareControler):
 	return bpy.data.objects[flareControler[targetNamePropertyName]]
 	
-def getPlaneFromElement(data):
-	return bpy.data.objects[data[elementPlainNamePropertyName]]
+def getPlaneFromElement(element):
+	return bpy.data.objects[element[elementPlainNamePropertyName]]
 	
 def getImageFromElementEmpty(data):
 	plane = getPlaneFromElement(data)
@@ -705,6 +707,9 @@ def saveLensFlare(flareControler, path):
 	
 	ET.ElementTree(flare).write(path)
 
+def updateActiveFlareName():
+	flareControler = getCorrespondingFlareControler(getActive())
+	if flareControler is not None: setActiveFlareName(flareControler.name)
 def setActiveFlareName(flareControlerName):
 	global activeFlareName
 	activeFlareName = flareControlerName
@@ -772,7 +777,9 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 	def draw(self, context):
 		layout = self.layout
 		
+		updateActiveFlareName()
 		flare = getActiveFlare()
+		if flare is None: return
 		target = getTargetEmpty(flare)
 		self.bl_label = "Settings: " + flare[flareNamePropertyName]
 		
@@ -817,6 +824,7 @@ class LensFlareElementSettingsPanel(bpy.types.Panel):
 		layout = self.layout
 		
 		element = getActiveElement()
+		if element is None: return
 		plane = getPlaneFromElement(element)
 		
 		row = layout.row(align = True)
@@ -897,6 +905,7 @@ class SelectFlare(bpy.types.Operator):
 	
 	def execute(self, context):
 		setActiveFlareName(self.flareName)
+		onlySelect(bpy.data.objects.get(self.flareName))
 		return{"FINISHED"}
 		
 class SelectFlareElement(bpy.types.Operator):

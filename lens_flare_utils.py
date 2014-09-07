@@ -50,7 +50,7 @@ def setActive(object):
 	
 def onlySelect(object):
 	deselectAll()
-	setActive(object)
+	if object is not None: setActive(object)
 	
 def deleteSelectedObjects():
 	bpy.ops.object.delete(use_global=False)
