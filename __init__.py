@@ -690,6 +690,7 @@ def saveLensFlare(flareControler, path):
 	for element in elements:
 		plane = getPlaneFromElement(element)
 		el = ET.SubElement(flare, "Element")
+		el.set("imageName", str(getImageFromElementEmpty(element).name))
 		el.set("name", element[elementEmptyNamePropertyName])
 		
 		el.set("position", str(element[elementPositionName]))
@@ -698,7 +699,6 @@ def saveLensFlare(flareControler, path):
 		el.set("centerRotation", str(element[trackToCenterInfluenceName]))
 		el.set("width", str(element[scaleXName]))
 		el.set("height", str(element[scaleYName]))
-		el.set("imageName", str(getImageFromElementEmpty(element).name))
 		
 		multiplyColor = ET.SubElement(el, "multiplyColor")
 		color = getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value
@@ -707,6 +707,40 @@ def saveLensFlare(flareControler, path):
 		multiplyColor.set("blue", str(color[2]))
 	
 	ET.ElementTree(flare).write(path)
+	
+def loadLensFlare(path):
+	tree = ET.parse(path)
+	flareET = tree.getroot()
+	
+	flareDataDictionary = { }
+	flareDataDictionary[flareNamePropertyName] = flareET.get("name")
+	flareDataDictionary[intensityName] = float(flareET.get("intensity"))
+	
+	elementDatas = []
+	for elementET in flareET:
+		elementDataDictionary = { }
+		elementDataDictionary[elementEmptyNamePropertyName] = elementET.get("name")
+		elementDataDictionary[imagePathName] = elementsFolder + elementET.get("imageName")
+		
+		elementDataDictionary[elementPositionName] = float(elementET.get("position"))
+		elementDataDictionary[intensityName] = float(elementET.get("intensity"))
+		elementDataDictionary[additionalRotationName] = float(elementET.get("rotation"))
+		elementDataDictionary[trackToCenterInfluenceName] = float(elementET.get("centerRotation"))
+		elementDataDictionary[scaleXName] = float(elementET.get("width"))
+		elementDataDictionary[scaleYName] = float(elementET.get("height"))
+		
+		multiplyColorET = elementET.find("multiplyColor")
+		color = [1, 1, 1, 1]
+		color[0] = float(multiplyColorET.get("red"))
+		color[1] = float(multiplyColorET.get("green"))
+		color[2] = float(multiplyColorET.get("blue"))
+		
+		elementDataDictionary[colorMultiplyName] = color
+		
+		elementDatas.append(elementDataDictionary)
+		
+
+	generateLensFlare(getActiveCamera(), getActive(), flareDataDictionary, elementDatas)
 
 def updateActiveFlareName():
 	flareControler = getCorrespondingFlareControler(getActive())
@@ -766,7 +800,8 @@ class LensFlaresPanel(bpy.types.Panel):
 				deleteFlare = row.operator("lens_flares.delete_lens_flare", text = "", icon = "X")
 				deleteFlare.flareName = flare.name
 		layout.operator("lens_flares.new_lens_flare", icon = 'PLUS')
-		
+		layout.operator("lens_flares.load_lens_flare", icon = 'PLUS')
+				
 class LensFlareSettingsPanel(bpy.types.Panel):
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
@@ -898,6 +933,22 @@ class SaveLensFlare(bpy.types.Operator):
 		return{"FINISHED"}
 		
 	def invoke(self, context, event):
+		context.window_manager.fileselect_add(self)
+		return {'RUNNING_MODAL'}
+		
+class LoadLensFlare(bpy.types.Operator):
+	bl_idname = "lens_flares.load_lens_flare"
+	bl_label = "Load Lens Flare"
+	bl_description = "Load Lens Flare from file."
+	
+	filepath = bpy.props.StringProperty(subtype="FILE_PATH")
+	
+	def execute(self, context):
+		loadLensFlare(self.filepath)
+		return{"FINISHED"}
+		
+	def invoke(self, context, event):
+		self.filepath = "F:\\Projekte\\Blender Flares Addon\\testSave.lf"
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 		
