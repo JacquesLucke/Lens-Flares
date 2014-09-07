@@ -724,7 +724,7 @@ def loadLensFlare(path):
 		
 		elementDataDictionary[elementPositionName] = float(elementET.get("position"))
 		elementDataDictionary[intensityName] = float(elementET.get("intensity"))
-		elementDataDictionary[additionalRotationName] = float(elementET.get("rotation"))
+		elementDataDictionary[additionalRotationName] = int(elementET.get("rotation"))
 		elementDataDictionary[trackToCenterInfluenceName] = float(elementET.get("centerRotation"))
 		elementDataDictionary[scaleXName] = float(elementET.get("width"))
 		elementDataDictionary[scaleYName] = float(elementET.get("height"))
