@@ -84,7 +84,7 @@ targetPropertyName = "flare target"
 cameraOfFlarePropertyName = "camera of this flare"
 startElementPropertyName = "start element"
 endElementPropertyName = "end element"
-dataElementPropertyName = "data element"
+elementNamePropertyName = "corresponding element"
 elementEmptyNamesContainerPropertyName = "element data names container"
 elementEmptyNamePropertyName = "element data name"
 elementPlainNamePropertyName = "element plane name"
@@ -551,7 +551,7 @@ def getSelectedFlareElementEmpties():
 	selection = getSelectedObjects()
 	for object in selection:
 		if hasFlareElementAttribute(object):
-			elementEmpty = getCorrespondingDataElement(object)
+			elementEmpty = getCorrespondingElement(object)
 			if elementEmpty not in flareElementEmpties and elementEmpty is not None:
 				flareElementEmpties.append(elementEmpty)
 	return flareElementEmpties
@@ -592,11 +592,12 @@ def hasLinkToFlareControler(object):
 	return linkToFlareControlerPropertyName in object
 	
 def makePartOfFlareElement(object, dataElement):
-	setCustomProperty(object, dataElementPropertyName, dataElement.name)
-def getCorrespondingDataElement(object):
-	return bpy.data.objects.get(object[dataElementPropertyName])
+	setCustomProperty(object, elementNamePropertyName, dataElement.name)
+def getCorrespondingElement(object):
+	if hasFlareElementAttribute(object): return bpy.data.objects.get(object[elementNamePropertyName])
 def hasFlareElementAttribute(object):
-	return dataElementPropertyName in object
+	if object is None: return False
+	return elementNamePropertyName in object
 	
 def getTargetEmpty(flareControler):
 	return bpy.data.objects[flareControler[targetNamePropertyName]]
@@ -718,6 +719,9 @@ def isFlareActive():
 def getActiveFlare():
 	return bpy.data.objects.get(activeFlareName)
 	
+def updateActiveElementName():
+	element = getCorrespondingElement(getActive())
+	if element is not None: setActiveElementName(element.name)
 def setActiveElementName(elementName):
 	global activeElementName
 	activeElementName = elementName
@@ -823,6 +827,7 @@ class LensFlareElementSettingsPanel(bpy.types.Panel):
 	def draw(self, context):
 		layout = self.layout
 		
+		updateActiveElementName()
 		element = getActiveElement()
 		if element is None: return
 		plane = getPlaneFromElement(element)
