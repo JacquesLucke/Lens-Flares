@@ -42,6 +42,7 @@ bl_info = {
 	}
 	
 activeFlareName = None
+activeElementName = None
 	
 elementsFolder = inspect.getfile(inspect.currentframe())[0:-len("__init__.py")] + "elements\\"
 	
@@ -594,11 +595,11 @@ def hasFlareElementAttribute(object):
 def getTargetEmpty(flareControler):
 	return bpy.data.objects[flareControler[targetNamePropertyName]]
 	
-def getPlaneFromData(data):
+def getPlaneFromElement(data):
 	return bpy.data.objects[data[elementPlainNamePropertyName]]
 	
 def getImageFromElementEmpty(data):
-	plane = getPlaneFromData(data)
+	plane = getPlaneFromElement(data)
 	node = getNodeWithNameInObject(plane, imageNodeName)
 	return node.image
 	
@@ -619,7 +620,7 @@ def setFlareDataDictionaryOnFlare(flareControler, flareDataDictionary):
 	flareControler[intensityName] = flareDataDictionary[intensityName]
 	
 def getElementDataDictionaryFromElement(element):
-	plane = getPlaneFromData(element)
+	plane = getPlaneFromElement(element)
 	return { 	elementPositionName : element[elementPositionName],
 				elementEmptyNamePropertyName : element[elementEmptyNamePropertyName],
 				imagePathName : getImageFromElementEmpty(element).filepath,
@@ -631,7 +632,7 @@ def getElementDataDictionaryFromElement(element):
 				colorMultiplyName : getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value }
 	
 def setElementDataDictionaryOnElement(elementEmpty, dataDictionary):	
-	plane = getPlaneFromData(elementEmpty)
+	plane = getPlaneFromElement(elementEmpty)
 	elementEmpty[elementEmptyNamePropertyName] = dataDictionary[elementEmptyNamePropertyName]
 	elementEmpty[elementPositionName] = dataDictionary[elementPositionName]
 	elementEmpty[scaleXName] = dataDictionary[scaleXName]
@@ -650,7 +651,7 @@ def deleteFlare(flareControler):
 	
 def deleteFlareElement(elementEmpty):
 	flareControler = getCorrespondingFlareControler(elementEmpty)
-	delete(getPlaneFromData(elementEmpty))
+	delete(getPlaneFromElement(elementEmpty))
 	delete(elementEmpty)
 	cleanReferenceList(getElementEmptyNamesContainer(flareControler))
 	
@@ -679,7 +680,7 @@ def saveLensFlare(flareControler, path):
 	
 	elements = getElementEmptyObjects(flareControler)
 	for element in elements:
-		plane = getPlaneFromData(element)
+		plane = getPlaneFromElement(element)
 		el = ET.SubElement(flare, "Element")
 		el.set("name", element[elementEmptyNamePropertyName])
 		
@@ -706,6 +707,14 @@ def isFlareActive():
 	return getActiveFlare() is not None
 def getActiveFlare():
 	return bpy.data.objects.get(activeFlareName)
+	
+def setActiveElementName(elementName):
+	global activeElementName
+	activeElementName = elementName
+def isElementActive():
+	return getActiveElement() is not None
+def getActiveElement():
+	return bpy.data.objects.get(activeElementName)
 
 	
 	
@@ -777,29 +786,41 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 				deleteElement.elementName = data.name
 		newElement = box.operator("lens_flares.new_flare_element", icon = 'PLUS')
 		newElement.flareName = flare.name
+				
+class LensFlareElementSettingsPanel(bpy.types.Panel):
+	bl_space_type = "VIEW_3D"
+	bl_region_type = "TOOLS"
+	bl_category = "Lens Flares"
+	bl_label = "Element Settings"
+	bl_context = "objectmode"
+	
+	@classmethod
+	def poll(self, context):
+		return isElementActive()
+	
+	def draw(self, context):
+		layout = self.layout
 		
-		for data in allDatas:
-			if data.select or getPlaneFromData(data).select:
-				layout.separator()
-				
-				row = layout.row(align = True)
-				row.prop(data, elementEmptyNamePropertyPath, text = "Name")
-				duplicateElement = row.operator("lens_flares.duplicate_flare_element", text = "", icon = "NEW")
-				duplicateElement.elementName = data.name
-				
-				layout.prop(data, elementPositionPath, text = "Position")
-				layout.prop(data, intensityPath, text = "Intensity")
-				
-				col = layout.column(align = True)
-				col.prop(data, additionalRotationPath, text = "Rotation")
-				col.prop(data, trackToCenterInfluencePath, text = "Center Influence")
-				
-				col = layout.column(align = True)
-				col.prop(data, scaleXPath, text = "Width")
-				col.prop(data, scaleYPath, text = "Height")
-				
-				plane = getPlaneFromData(data)
-				layout.prop(getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2], "default_value")
+		element = getActiveElement()
+		plane = getPlaneFromElement(element)
+		
+		row = layout.row(align = True)
+		row.prop(element, elementEmptyNamePropertyPath, text = "Name")
+		duplicateElement = row.operator("lens_flares.duplicate_flare_element", text = "", icon = "NEW")
+		duplicateElement.elementName = element.name
+		
+		layout.prop(element, elementPositionPath, text = "Position")
+		layout.prop(element, intensityPath, text = "Intensity")
+		
+		col = layout.column(align = True)
+		col.prop(element, additionalRotationPath, text = "Rotation")
+		col.prop(element, trackToCenterInfluencePath, text = "Center Influence")
+		
+		col = layout.column(align = True)
+		col.prop(element, scaleXPath, text = "Width")
+		col.prop(element, scaleYPath, text = "Height")
+		
+		layout.prop(getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2], "default_value")
 		
 		
 # operators
@@ -824,7 +845,8 @@ class NewFlareElement(bpy.types.Operator):
 	filepath = bpy.props.StringProperty(subtype="FILE_PATH")
 
 	def execute(self, context):
-		newFlareElement(bpy.data.objects[self.flareName], getImage(self.filepath), getFileName(self.filepath))
+		(elementEmpty, flareElement) = newFlareElement(bpy.data.objects[self.flareName], getImage(self.filepath), getFileName(self.filepath))
+		setActiveElementName(elementEmpty.name)
 		return {'FINISHED'}
 
 	def invoke(self, context, event):
@@ -867,7 +889,7 @@ class SelectFlareElement(bpy.types.Operator):
 	elementName = bpy.props.StringProperty()
 	
 	def execute(self, context):
-		onlySelect(bpy.data.objects[self.elementName])
+		setActiveElementName(self.elementName)
 		return{"FINISHED"}
 		
 class DeleteLensFlare(bpy.types.Operator):
