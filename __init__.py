@@ -41,6 +41,8 @@ bl_info = {
 	"warning":	   "alpha"
 	}
 	
+activeFlareName = None
+	
 elementsFolder = inspect.getfile(inspect.currentframe())[0:-len("__init__.py")] + "elements\\"
 	
 flareControlerPrefix = "flare controler"
@@ -696,6 +698,15 @@ def saveLensFlare(flareControler, path):
 		multiplyColor.set("blue", str(color[2]))
 	
 	ET.ElementTree(flare).write(path)
+
+def setActiveFlareName(flareControlerName):
+	global activeFlareName
+	activeFlareName = flareControlerName
+def isFlareActive():
+	return getActiveFlare() is not None
+def getActiveFlare():
+	return bpy.data.objects.get(activeFlareName)
+
 	
 	
 # interface
@@ -735,12 +746,12 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 	
 	@classmethod
 	def poll(self, context):
-		return len(getSelectedFlares()) > 0
+		return isFlareActive()
 	
 	def draw(self, context):
 		layout = self.layout
 		
-		flare = getSelectedFlares()[0]
+		flare = getActiveFlare()
 		target = getTargetEmpty(flare)
 		self.bl_label = "Settings: " + flare[flareNamePropertyName]
 		
@@ -800,7 +811,8 @@ class NewLensFlare(bpy.types.Operator):
 	bl_description = "Create a new Lens Flare on active object."
 	
 	def execute(self, context):
-		newLensFlare(getActiveCamera(), getActive())
+		flareControler = newLensFlare(getActiveCamera(), getActive())
+		setActiveFlareName(flareControler.name)
 		return{"FINISHED"}
 		
 class NewFlareElement(bpy.types.Operator):
@@ -844,7 +856,7 @@ class SelectFlare(bpy.types.Operator):
 	flareName = bpy.props.StringProperty()
 	
 	def execute(self, context):
-		onlySelect(bpy.data.objects[self.flareName])
+		setActiveFlareName(self.flareName)
 		return{"FINISHED"}
 		
 class SelectFlareElement(bpy.types.Operator):
