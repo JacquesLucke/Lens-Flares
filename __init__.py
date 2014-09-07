@@ -53,6 +53,7 @@ startElementPrefix = "start element"
 endElementPrefix = "end element"
 flareElementEmptyPrefix = "flare element data"
 elementEmptyNamesContainerPrefix = "element data names container"
+targetEmptyPrefix = "target empty"
 
 dofDistanceName = "dof distance"
 plainDistanceName = "plane distance"
@@ -86,6 +87,7 @@ elementEmptyNamePropertyName = "element data name"
 elementPlainNamePropertyName = "element plane name"
 flareNamePropertyName = "flare name"
 linkToFlareControlerPropertyName = "flare link from target"
+targetNamePropertyName = "target empty"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -115,9 +117,10 @@ def newLensFlareFromDictionary(camera, target, flareDataDictionary):
 def newLensFlare(camera, target):
 	setCurrentOffsetPropertyOnCamera(camera)
 	center = getCenterEmpty(camera)
-	flareControler = newFlareControler(camera, target, center)	
-	setCustomProperty(target, linkToFlareControlerPropertyName, flareControler.name)
-	angleCalculator = newAngleCalculator(flareControler, camera, target, center)
+	targetEmpty = newTargetEmpty(target)
+	flareControler = newFlareControler(camera, targetEmpty, center)	
+	setCustomProperty(targetEmpty, linkToFlareControlerPropertyName, flareControler.name)
+	angleCalculator = newAngleCalculator(flareControler, camera, targetEmpty, center)
 	startDistanceCalculator = newStartDistanceCalculator(flareControler, angleCalculator, center, camera)
 	
 	startElement = newStartElement(flareControler, camera, startDistanceCalculator)
@@ -128,6 +131,9 @@ def newLensFlare(camera, target):
 	setCustomProperty(flareControler, startElementPropertyName, startElement.name)
 	setCustomProperty(flareControler, endElementPropertyName, endElement.name)
 	setCustomProperty(flareControler, elementEmptyNamesContainerPropertyName, elementEmptyNamesContainer.name)
+	setCustomProperty(flareControler, targetNamePropertyName, targetEmpty.name)
+	setParentWithoutInverse(targetEmpty, camera)
+	makePartOfFlareControler(targetEmpty, flareControler)
 	
 	flareControler.hide =  True
 	angleCalculator.hide = True
@@ -135,12 +141,19 @@ def newLensFlare(camera, target):
 	startElement.hide = True
 	endElement.hide = True
 	elementEmptyNamesContainer.hide = True
+	targetEmpty.hide = True
 	
 	return flareControler
 	
 def setCurrentOffsetPropertyOnCamera(camera):
 	if currentElementOffsetName not in camera:
 		setCustomProperty(camera, currentElementOffsetName, -0.002)
+		
+def newTargetEmpty(target):
+	targetEmpty = newEmpty(name = targetEmptyPrefix)
+	constraint = targetEmpty.constraints.new(type = "COPY_LOCATION")
+	constraint.target = target
+	return targetEmpty
 
 # camera direction calculator
 
@@ -575,6 +588,9 @@ def getCorrespondingDataElement(object):
 def hasFlareElementAttribute(object):
 	return dataElementPropertyName in object
 	
+def getTargetEmpty(flareControler):
+	return bpy.data.objects[flareControler[targetNamePropertyName]]
+	
 def getPlaneFromData(data):
 	return bpy.data.objects[data[elementPlainNamePropertyName]]
 	
@@ -711,9 +727,11 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 		layout = self.layout
 		
 		flare = getSelectedFlares()[0]
+		target = getTargetEmpty(flare)
 		self.bl_label = "Settings: " + flare[flareNamePropertyName]
 		
 		layout.prop(flare, flareNamePropertyPath, text = "Name")
+		layout.prop(target.constraints[0], 'target', text = "Target")
 		layout.prop(flare, intensityPath, text = "Intensity")
 				
 		allDatas = getDataElementsFromFlare(flare)
