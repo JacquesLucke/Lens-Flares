@@ -436,25 +436,7 @@ def newFlareElementPlane(image, elementEmpty, flareControler, camera):
 	setMaterialOnObject(plane, material)
 	
 	setParentWithoutInverse(plane, elementEmpty)
-	constraint = plane.constraints.new(type = "LIMIT_SCALE")
-	constraintPath = getConstraintPath(constraint)
-	setUseMinMaxToTrue(constraint)
-	
-	for val in [".min", ".max"]:
-		driver = newDriver(plane, constraintPath + val + "_x")
-		linkDistanceToDriver(driver, "distance", plane, camera)
-		linkFloatPropertyToDriver(driver, "factor", plane, planeWidthFactorPath)
-		linkFloatPropertyToDriver(driver, "scale", elementEmpty, scaleXPath)
-		driver.expression = "factor * scale * distance / 1"
-		
-		driver = newDriver(plane, constraintPath + val + "_y")
-		linkDistanceToDriver(driver, "distance", plane, camera)
-		linkFloatPropertyToDriver(driver, "scale", elementEmpty, scaleYPath)
-		driver.expression = "scale * distance / 1"
-		
-		driver = newDriver(plane, constraintPath + val + "_z")
-		linkDistanceToDriver(driver, "distance", plane, camera)
-		driver.expression = "distance / 1"
+	setScaleConstraintOnElementPlane(plane, elementEmpty, camera)
 	
 	constraint = plane.constraints.new(type = "TRACK_TO")
 	constraint.target = getCenterEmpty(camera)
@@ -534,6 +516,26 @@ def newCyclesFlareMaterial(image):
 	linkToMixShader(nodeTree, transparent.outputs[0], emission.outputs[0], mixShader, factor = intensityNode.outputs[0])
 	newNodeLink(nodeTree, mixShader.outputs[0], output.inputs[0])
 	return material
+	
+def setScaleConstraintOnElementPlane(plane, element, camera):
+	constraint = plane.constraints.new(type = "LIMIT_SCALE")
+	constraintPath = getConstraintPath(constraint)
+	setUseMinMaxToTrue(constraint)
+	for val in [".min", ".max"]:
+		driver = newDriver(plane, constraintPath + val + "_x")
+		linkDistanceToDriver(driver, "distance", plane, camera)
+		linkFloatPropertyToDriver(driver, "factor", plane, planeWidthFactorPath)
+		linkFloatPropertyToDriver(driver, "scale", element, scaleXPath)
+		driver.expression = "factor * scale * distance / 1"
+		
+		driver = newDriver(plane, constraintPath + val + "_y")
+		linkDistanceToDriver(driver, "distance", plane, camera)
+		linkFloatPropertyToDriver(driver, "scale", element, scaleYPath)
+		driver.expression = "scale * distance / 1"
+		
+		driver = newDriver(plane, constraintPath + val + "_z")
+		linkDistanceToDriver(driver, "distance", plane, camera)
+		driver.expression = "distance / 1"
 	
 	
 	
