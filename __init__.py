@@ -439,26 +439,7 @@ def newFlareElementPlane(image, elementEmpty, flareControler, camera):
 	setScaleConstraintOnElementPlane(plane, elementEmpty, camera)
 	setTrackToCenterConstraintOnElementPlane(plane, elementEmpty, camera)
 	limitXYRotationOnElementPlane(plane)
-	
-	constraint = plane.constraints.new(type = "LIMIT_LOCATION")
-	constraint.owner_space = "LOCAL"
-	setUseMinMaxToTrue(constraint)
-	constraintPath = getConstraintPath(constraint)
-	for channel in [".min_", ".max_"]:
-		driver = newDriver(plane, constraintPath + channel + "x")
-		linkFloatPropertyToDriver(driver, "offset", elementEmpty, offsetXPath)
-		linkDistanceToDriver(driver, "distance", elementEmpty, camera)
-		driver.expression = "offset*distance"
-		
-		driver = newDriver(plane, constraintPath + channel + "y")
-		linkFloatPropertyToDriver(driver, "offset", elementEmpty, offsetYPath)
-		linkDistanceToDriver(driver, "distance", elementEmpty, camera)
-		driver.expression = "offset*distance"
-	
-		driver = newDriver(plane, constraintPath + channel + "z")
-		linkFloatPropertyToDriver(driver, "offset", elementEmpty, avoidArtefactsOffsetPath)
-		linkDistanceToDriver(driver, "distance", elementEmpty, camera)
-		driver.expression = "offset*distance"
+	setLimitLocationConstraintOnElementPlane(plane, elementEmpty, camera)
 	
 	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value")
 	linkFloatPropertyToDriver(driver, "special", elementEmpty, intensityPath)
@@ -541,6 +522,28 @@ def limitXYRotationOnElementPlane(plane):
 	constraint.owner_space = "LOCAL"
 	constraint.use_limit_x = True
 	constraint.use_limit_y = True
+	
+def setLimitLocationConstraintOnElementPlane(plane, element, camera):
+	constraint = plane.constraints.new(type = "LIMIT_LOCATION")
+	constraint.owner_space = "LOCAL"
+	setUseMinMaxToTrue(constraint)
+	constraintPath = getConstraintPath(constraint)
+	for channel in [".min_", ".max_"]:
+		driver = newDriver(plane, constraintPath + channel + "x")
+		linkFloatPropertyToDriver(driver, "offset", element, offsetXPath)
+		linkDistanceToDriver(driver, "distance", element, camera)
+		driver.expression = "offset*distance"
+		
+		driver = newDriver(plane, constraintPath + channel + "y")
+		linkFloatPropertyToDriver(driver, "offset", element, offsetYPath)
+		linkDistanceToDriver(driver, "distance", element, camera)
+		driver.expression = "offset*distance"
+	
+		driver = newDriver(plane, constraintPath + channel + "z")
+		linkFloatPropertyToDriver(driver, "offset", element, avoidArtefactsOffsetPath)
+		linkDistanceToDriver(driver, "distance", element, camera)
+		driver.expression = "offset*distance"
+	
 	
 	
 # utils
