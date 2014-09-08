@@ -140,4 +140,8 @@ def getPossibleName(prefix):
 	
 def getFileName(path):
 	return os.path.splitext(os.path.basename(path))[0]
+	
+def setMinMaxTransparentBounces(amount):
+	bpy.context.scene.cycles.transparent_min_bounces = amount
+	bpy.context.scene.cycles.transparent_max_bounces = amount
 					

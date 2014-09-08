@@ -147,6 +147,7 @@ def newLensFlare(camera, target):
 	elementEmptyNamesContainer.hide = True
 	targetEmpty.hide = True
 	
+	setMinMaxTransparentBounces(512)
 	return flareControler
 	
 def setCurrentOffsetPropertyOnCamera(camera):
