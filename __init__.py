@@ -441,14 +441,7 @@ def newFlareElementPlane(image, elementEmpty, flareControler, camera):
 	limitXYRotationOnElementPlane(plane)
 	setLimitLocationConstraintOnElementPlane(plane, elementEmpty, camera)
 	setIntensityDriverOnElementPlane(plane, elementEmpty, flareControler)
-	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value")
-	linkFloatPropertyToDriver(driver, "objectIntensity", elementEmpty, intensityPath)
-	linkFloatPropertyToDriver(driver, "flareIntensity", flareControler, intensityPath)
-	driver.expression = "objectIntensity * flareIntensity"
-	
-	driver = newDriver(plane, "rotation_euler", index = 2)
-	linkFloatPropertyToDriver(driver, "var", elementEmpty, additionalRotationPath)
-	driver.expression = "radians(var)"
+	setAdditionalRotationDriverOnElementPlane(plane, elementEmpty)
 	
 	return plane
 	
@@ -549,6 +542,11 @@ def setIntensityDriverOnElementPlane(plane, element, flareControler):
 	linkFloatPropertyToDriver(driver, "objectIntensity", element, intensityPath)
 	linkFloatPropertyToDriver(driver, "flareIntensity", flareControler, intensityPath)
 	driver.expression = "objectIntensity * flareIntensity"
+	
+def setAdditionalRotationDriverOnElementPlane(plane, element):
+	driver = newDriver(plane, "rotation_euler", index = 2)
+	linkFloatPropertyToDriver(driver, "var", element, additionalRotationPath)
+	driver.expression = "radians(var)"
 	
 	
 	
