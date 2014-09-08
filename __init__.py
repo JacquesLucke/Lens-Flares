@@ -440,11 +440,11 @@ def newFlareElementPlane(image, elementEmpty, flareControler, camera):
 	setTrackToCenterConstraintOnElementPlane(plane, elementEmpty, camera)
 	limitXYRotationOnElementPlane(plane)
 	setLimitLocationConstraintOnElementPlane(plane, elementEmpty, camera)
-	
+	setIntensityDriverOnElementPlane(plane, elementEmpty, flareControler)
 	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value")
-	linkFloatPropertyToDriver(driver, "special", elementEmpty, intensityPath)
-	linkFloatPropertyToDriver(driver, "general", flareControler, intensityPath)
-	driver.expression = "special * general"
+	linkFloatPropertyToDriver(driver, "objectIntensity", elementEmpty, intensityPath)
+	linkFloatPropertyToDriver(driver, "flareIntensity", flareControler, intensityPath)
+	driver.expression = "objectIntensity * flareIntensity"
 	
 	driver = newDriver(plane, "rotation_euler", index = 2)
 	linkFloatPropertyToDriver(driver, "var", elementEmpty, additionalRotationPath)
@@ -543,6 +543,12 @@ def setLimitLocationConstraintOnElementPlane(plane, element, camera):
 		linkFloatPropertyToDriver(driver, "offset", element, avoidArtefactsOffsetPath)
 		linkDistanceToDriver(driver, "distance", element, camera)
 		driver.expression = "offset*distance"
+		
+def setIntensityDriverOnElementPlane(plane, element, flareControler):
+	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value")
+	linkFloatPropertyToDriver(driver, "objectIntensity", element, intensityPath)
+	linkFloatPropertyToDriver(driver, "flareIntensity", flareControler, intensityPath)
+	driver.expression = "objectIntensity * flareIntensity"
 	
 	
 	
