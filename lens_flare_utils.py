@@ -20,6 +20,7 @@ Created by Jacques Lucke
 
 import bpy, random, math, mathutils, os.path
 from bpy_extras.image_utils import load_image
+import xml.etree.ElementTree as ET
 	
 def getActiveCamera():
 	if bpy.context.scene.camera is None: return newCamera()
@@ -147,4 +148,15 @@ def setMinMaxTransparentBounces(amount):
 	
 def setDisplayTypeToWire(object):
 	object.draw_type = "WIRE"
+	
+def getStringProperty(tree, name, fallback = ""):
+	return str(getProperty(tree, name, fallback))
+def getFloatProperty(tree, name, fallback = 0.0):
+	return float(getProperty(tree, name, fallback))
+def getIntProperty(tree, name, fallback = 0):
+	return float(getProperty(tree, name, fallback))
+def getProperty(tree, name, fallback = 0):
+	object = tree.get(name)
+	if object is None: object = fallback
+	return object
 					

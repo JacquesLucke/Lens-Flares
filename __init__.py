@@ -737,29 +737,29 @@ def loadLensFlare(path):
 	flareET = tree.getroot()
 	
 	flareDataDictionary = { }
-	flareDataDictionary[flareNamePropertyName] = flareET.get("name")
-	flareDataDictionary[intensityName] = float(flareET.get("intensity"))
+	flareDataDictionary[flareNamePropertyName] = getStringProperty(flareET, "name", "Lens Flare")
+	flareDataDictionary[intensityName] = getFloatProperty(flareET, "intensity", 1.0)
 	
 	elementDatas = []
 	for elementET in flareET:
 		elementDataDictionary = { }
-		elementDataDictionary[elementEmptyNamePropertyName] = elementET.get("name")
-		elementDataDictionary[imagePathName] = elementsFolder + elementET.get("imageName")
+		elementDataDictionary[elementEmptyNamePropertyName] = getStringProperty(elementET, "name", "Flare Element")
+		elementDataDictionary[imagePathName] = elementsFolder + getStringProperty(elementET, "imageName", "circle.jpg")
 		
-		elementDataDictionary[elementPositionName] = float(elementET.get("position"))
-		elementDataDictionary[intensityName] = float(elementET.get("intensity"))
-		elementDataDictionary[additionalRotationName] = int(elementET.get("rotation"))
-		elementDataDictionary[trackToCenterInfluenceName] = float(elementET.get("centerRotation"))
-		elementDataDictionary[scaleXName] = float(elementET.get("width"))
-		elementDataDictionary[scaleYName] = float(elementET.get("height"))
-		elementDataDictionary[offsetXName] = float(elementET.get("horizontal"))
-		elementDataDictionary[offsetYName] = float(elementET.get("vertical"))
+		elementDataDictionary[elementPositionName] = getFloatProperty(elementET, "position", 0.2)
+		elementDataDictionary[intensityName] = getFloatProperty(elementET, "intensity", 1.0)
+		elementDataDictionary[additionalRotationName] = getIntProperty(elementET, "rotation", 0)
+		elementDataDictionary[trackToCenterInfluenceName] = getFloatProperty(elementET, "centerRotation", 0.0)
+		elementDataDictionary[scaleXName] = getFloatProperty(elementET, "width", 1.0)
+		elementDataDictionary[scaleYName] = getFloatProperty(elementET, "height", 1.0)
+		elementDataDictionary[offsetXName] = getFloatProperty(elementET, "horizontal", 0.0)
+		elementDataDictionary[offsetYName] = getFloatProperty(elementET, "vertical", 0.0)
 		
 		multiplyColorET = elementET.find("multiplyColor")
 		color = [1, 1, 1, 1]
-		color[0] = float(multiplyColorET.get("red"))
-		color[1] = float(multiplyColorET.get("green"))
-		color[2] = float(multiplyColorET.get("blue"))
+		color[0] = getFloatProperty(multiplyColorET, "red", 1.0)
+		color[1] = getFloatProperty(multiplyColorET, "green", 1.0)
+		color[2] = getFloatProperty(multiplyColorET, "blue", 1.0)
 		
 		elementDataDictionary[colorMultiplyName] = color
 		
