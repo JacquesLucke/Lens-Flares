@@ -395,16 +395,7 @@ def newFlareElementEmpty(flareControler, startElement, endElement, camera):
 	dataEmpty.empty_draw_size = 0.01
 	
 	setParentWithoutInverse(dataEmpty, flareControler)
-	setCustomProperty(dataEmpty, elementEmptyNamePropertyName, "Glow", description = "This name shows up in the element list.")
-	setCustomProperty(dataEmpty, avoidArtefactsOffsetName, camera[currentElementOffsetName], description = "Random offset of every object to avoid overlapping.")
-	setCustomProperty(dataEmpty, elementPositionName, 0.0, description = "Relative element position. 0: element is on target; 1: opposite side")
-	setCustomProperty(dataEmpty, scaleXName, 1.0, min = 0.0, description = "Width of this element.")
-	setCustomProperty(dataEmpty, scaleYName, 1.0, min = 0.0, description = "Height of this element.")
-	setCustomProperty(dataEmpty, trackToCenterInfluenceName, 0.0, min = 0.0, max = 1.0, description = "0: normal; 1: rotate element to center")
-	setCustomProperty(dataEmpty, intensityName, 1.0, min = 0.0, description = "Brightness of this element.")
-	setCustomProperty(dataEmpty, additionalRotationName, 0, description = "Rotation in camera direction.")
-	setCustomProperty(dataEmpty, offsetXName, 0.0, description = "Horizontal movement of this element.")
-	setCustomProperty(dataEmpty, offsetYName, 0.0, description = "Vertical movement of this element.")
+	setCustomPropertiesOnFlareElement(dataEmpty, camera)
 	
 	constraint = dataEmpty.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
@@ -430,6 +421,18 @@ def newFlareElementEmpty(flareControler, startElement, endElement, camera):
 		driver.expression = "start * (1-position) + end * position"
 		
 	return dataEmpty
+	
+def setCustomPropertiesOnFlareElement(element, camera):
+	setCustomProperty(element, elementEmptyNamePropertyName, "Glow", description = "This name shows up in the element list.")
+	setCustomProperty(element, avoidArtefactsOffsetName, camera[currentElementOffsetName], description = "Random offset of every object to avoid overlapping.")
+	setCustomProperty(element, elementPositionName, 0.0, description = "Relative element position. 0: element is on target; 1: opposite side")
+	setCustomProperty(element, scaleXName, 1.0, min = 0.0, description = "Width of this element.")
+	setCustomProperty(element, scaleYName, 1.0, min = 0.0, description = "Height of this element.")
+	setCustomProperty(element, trackToCenterInfluenceName, 0.0, min = 0.0, max = 1.0, description = "0: normal; 1: rotate element to center")
+	setCustomProperty(element, intensityName, 1.0, min = 0.0, description = "Brightness of this element.")
+	setCustomProperty(element, additionalRotationName, 0, description = "Rotation in camera direction.")
+	setCustomProperty(element, offsetXName, 0.0, description = "Horizontal movement of this element.")
+	setCustomProperty(element, offsetYName, 0.0, description = "Vertical movement of this element.")
 
 def newFlareElementPlane(image, elementEmpty, flareControler, camera):
 	plane = newPlane(name = flareElementPrefix, size = 0.1)
