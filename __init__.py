@@ -390,37 +390,14 @@ def newFlareElement(flareControler, image, name = "element"):
 	return (elementEmpty, flareElement)
 	
 def newFlareElementEmpty(flareControler, startElement, endElement, camera):
-	dataEmpty = newEmpty(name = flareElementEmptyPrefix)
-	makePartOfFlareControler(dataEmpty, flareControler)
-	dataEmpty.empty_draw_size = 0.01
+	element = newEmpty(name = flareElementEmptyPrefix)
+	makePartOfFlareControler(element, flareControler)
+	element.empty_draw_size = 0.01
 	
-	setParentWithoutInverse(dataEmpty, flareControler)
-	setCustomPropertiesOnFlareElement(dataEmpty, camera)
-	
-	constraint = dataEmpty.constraints.new(type = "LIMIT_LOCATION")
-	setUseMinMaxToTrue(constraint)
-	constraintPath = getConstraintPath(constraint)
-	
-	for val in [".min", ".max"]:
-		driver = newDriver(dataEmpty, constraintPath + val + "_x")
-		linkTransformChannelToDriver(driver, "start", startElement, "LOC_X")
-		linkTransformChannelToDriver(driver, "end", endElement, "LOC_X")
-		linkFloatPropertyToDriver(driver, "position", dataEmpty, elementPositionPath)
-		driver.expression = "start * (1-position) + end * position"
-		
-		driver = newDriver(dataEmpty, constraintPath + val + "_y")
-		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Y")
-		linkTransformChannelToDriver(driver, "end", endElement, "LOC_Y")
-		linkFloatPropertyToDriver(driver, "position", dataEmpty, elementPositionPath)
-		driver.expression = "start * (1-position) + end * position"
-		
-		driver = newDriver(dataEmpty, constraintPath + val + "_z")
-		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Z")
-		linkTransformChannelToDriver(driver, "end", endElement, "LOC_Z")
-		linkFloatPropertyToDriver(driver, "position", dataEmpty, elementPositionPath)
-		driver.expression = "start * (1-position) + end * position"
-		
-	return dataEmpty
+	setParentWithoutInverse(element, flareControler)
+	setCustomPropertiesOnFlareElement(element, camera)
+	setPositionConstraintOnFlareElement(element, startElement, endElement)
+	return element
 	
 def setCustomPropertiesOnFlareElement(element, camera):
 	setCustomProperty(element, elementEmptyNamePropertyName, "Glow", description = "This name shows up in the element list.")
@@ -433,6 +410,30 @@ def setCustomPropertiesOnFlareElement(element, camera):
 	setCustomProperty(element, additionalRotationName, 0, description = "Rotation in camera direction.")
 	setCustomProperty(element, offsetXName, 0.0, description = "Horizontal movement of this element.")
 	setCustomProperty(element, offsetYName, 0.0, description = "Vertical movement of this element.")
+	
+def setPositionConstraintOnFlareElement(element, startElement, endElement):
+	constraint = element.constraints.new(type = "LIMIT_LOCATION")
+	setUseMinMaxToTrue(constraint)
+	constraintPath = getConstraintPath(constraint)
+	
+	for val in [".min", ".max"]:
+		driver = newDriver(element, constraintPath + val + "_x")
+		linkTransformChannelToDriver(driver, "start", startElement, "LOC_X")
+		linkTransformChannelToDriver(driver, "end", endElement, "LOC_X")
+		linkFloatPropertyToDriver(driver, "position", element, elementPositionPath)
+		driver.expression = "start * (1-position) + end * position"
+		
+		driver = newDriver(element, constraintPath + val + "_y")
+		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Y")
+		linkTransformChannelToDriver(driver, "end", endElement, "LOC_Y")
+		linkFloatPropertyToDriver(driver, "position", element, elementPositionPath)
+		driver.expression = "start * (1-position) + end * position"
+		
+		driver = newDriver(element, constraintPath + val + "_z")
+		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Z")
+		linkTransformChannelToDriver(driver, "end", endElement, "LOC_Z")
+		linkFloatPropertyToDriver(driver, "position", element, elementPositionPath)
+		driver.expression = "start * (1-position) + end * position"
 
 def newFlareElementPlane(image, elementEmpty, flareControler, camera):
 	plane = newPlane(name = flareElementPrefix, size = 0.1)
