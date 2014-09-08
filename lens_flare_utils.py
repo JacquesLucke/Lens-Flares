@@ -154,7 +154,7 @@ def getStringProperty(tree, name, fallback = ""):
 def getFloatProperty(tree, name, fallback = 0.0):
 	return float(getProperty(tree, name, fallback))
 def getIntProperty(tree, name, fallback = 0):
-	return float(getProperty(tree, name, fallback))
+	return int(getProperty(tree, name, fallback))
 def getProperty(tree, name, fallback = 0):
 	object = tree.get(name)
 	if object is None: object = fallback
