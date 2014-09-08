@@ -437,14 +437,7 @@ def newFlareElementPlane(image, elementEmpty, flareControler, camera):
 	
 	setParentWithoutInverse(plane, elementEmpty)
 	setScaleConstraintOnElementPlane(plane, elementEmpty, camera)
-	
-	constraint = plane.constraints.new(type = "TRACK_TO")
-	constraint.target = getCenterEmpty(camera)
-	constraint.track_axis = "TRACK_X"
-	constraint.use_target_z = True
-	constraintPath = getConstraintPath(constraint)
-	driver = newDriver(plane, constraintPath + ".influence", type = "SUM")
-	linkFloatPropertyToDriver(driver, "var", elementEmpty, trackToCenterInfluencePath)
+	setTrackToCenterConstraintOnElementPlane(plane, elementEmpty, camera)
 	
 	constraint = plane.constraints.new(type = "LIMIT_ROTATION")
 	constraint.owner_space = "LOCAL"
@@ -537,6 +530,14 @@ def setScaleConstraintOnElementPlane(plane, element, camera):
 		linkDistanceToDriver(driver, "distance", plane, camera)
 		driver.expression = "distance / 1"
 	
+def setTrackToCenterConstraintOnElementPlane(plane, element, camera):
+	constraint = plane.constraints.new(type = "TRACK_TO")
+	constraint.target = getCenterEmpty(camera)
+	constraint.track_axis = "TRACK_X"
+	constraint.use_target_z = True
+	constraintPath = getConstraintPath(constraint)
+	driver = newDriver(plane, constraintPath + ".influence", type = "SUM")
+	linkFloatPropertyToDriver(driver, "var", element, trackToCenterInfluencePath)
 	
 	
 # utils
