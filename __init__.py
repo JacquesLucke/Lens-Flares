@@ -71,6 +71,8 @@ elementPositionName = "element position"
 planeWidthFactorName = "width factor"
 scaleXName = "scale x"
 scaleYName = "scale y"
+offsetXName = "offset x"
+offsetYName = "offset y"
 imagePathName = "image path"
 colorMultiplyName = "multiply color"
 additionalRotationName = "additional rotation"
@@ -103,6 +105,8 @@ elementPositionPath = getDataPath(elementPositionName)
 planeWidthFactorPath = getDataPath(planeWidthFactorName)
 scaleXPath = getDataPath(scaleXName)
 scaleYPath = getDataPath(scaleYName)
+offsetXPath = getDataPath(offsetXName)
+offsetYPath = getDataPath(offsetYName)
 additionalRotationPath = getDataPath(additionalRotationName)
 trackToCenterInfluencePath = getDataPath(trackToCenterInfluenceName)
 intensityPath = getDataPath(intensityName)
@@ -399,6 +403,8 @@ def newFlareElementEmpty(flareControler, startElement, endElement, camera):
 	setCustomProperty(dataEmpty, trackToCenterInfluenceName, 0.0, min = 0.0, max = 1.0, description = "0: normal; 1: rotate element to center")
 	setCustomProperty(dataEmpty, intensityName, 1.0, min = 0.0, description = "Brightness of this element.")
 	setCustomProperty(dataEmpty, additionalRotationName, 0, description = "Rotation in camera direction.")
+	setCustomProperty(dataEmpty, offsetXName, 0.0, description = "Horizontal movement of this element.")
+	setCustomProperty(dataEmpty, offsetYName, 0.0, description = "Vertical movement of this element.")
 	
 	constraint = dataEmpty.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
@@ -468,11 +474,20 @@ def newFlareElementPlane(image, elementEmpty, flareControler, camera):
 	
 	constraint = plane.constraints.new(type = "LIMIT_LOCATION")
 	constraint.owner_space = "LOCAL"
-	constraint.use_min_z = True
-	constraint.use_max_z = True
+	setUseMinMaxToTrue(constraint)
 	constraintPath = getConstraintPath(constraint)
-	for channel in [".min_z", ".max_z"]:
-		driver = newDriver(plane, constraintPath + channel)
+	for channel in [".min_", ".max_"]:
+		driver = newDriver(plane, constraintPath + channel + "x")
+		linkFloatPropertyToDriver(driver, "offset", elementEmpty, offsetXPath)
+		linkDistanceToDriver(driver, "distance", elementEmpty, camera)
+		driver.expression = "offset*distance"
+		
+		driver = newDriver(plane, constraintPath + channel + "y")
+		linkFloatPropertyToDriver(driver, "offset", elementEmpty, offsetYPath)
+		linkDistanceToDriver(driver, "distance", elementEmpty, camera)
+		driver.expression = "offset*distance"
+	
+		driver = newDriver(plane, constraintPath + channel + "z")
 		linkFloatPropertyToDriver(driver, "offset", elementEmpty, avoidArtefactsOffsetPath)
 		linkDistanceToDriver(driver, "distance", elementEmpty, camera)
 		driver.expression = "offset*distance"
@@ -636,6 +651,8 @@ def getElementDataDictionaryFromElement(element):
 				imagePathName : getImageFromElementEmpty(element).filepath,
 				scaleXName : element[scaleXName],
 				scaleYName : element[scaleYName],
+				offsetXName : element[offsetXName],
+				offsetYName : element[offsetYName],
 				trackToCenterInfluenceName : element[trackToCenterInfluenceName],
 				intensityName : element[intensityName],
 				additionalRotationName : element[additionalRotationName],
@@ -647,6 +664,8 @@ def setElementDataDictionaryOnElement(elementEmpty, dataDictionary):
 	elementEmpty[elementPositionName] = dataDictionary[elementPositionName]
 	elementEmpty[scaleXName] = dataDictionary[scaleXName]
 	elementEmpty[scaleYName] = dataDictionary[scaleYName]
+	elementEmpty[offsetXName] = dataDictionary[offsetXName]
+	elementEmpty[offsetYName] = dataDictionary[offsetYName]
 	elementEmpty[trackToCenterInfluenceName] = dataDictionary[trackToCenterInfluenceName]
 	elementEmpty[intensityName] = dataDictionary[intensityName]
 	elementEmpty[additionalRotationName] = dataDictionary[additionalRotationName]
@@ -702,6 +721,8 @@ def saveLensFlare(flareControler, path):
 		el.set("centerRotation", str(element[trackToCenterInfluenceName]))
 		el.set("width", str(element[scaleXName]))
 		el.set("height", str(element[scaleYName]))
+		el.set("horizontal", str(element[offsetXName]))
+		el.set("vertical", str(element[offsetYName]))
 		
 		multiplyColor = ET.SubElement(el, "multiplyColor")
 		color = getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value
@@ -731,6 +752,8 @@ def loadLensFlare(path):
 		elementDataDictionary[trackToCenterInfluenceName] = float(elementET.get("centerRotation"))
 		elementDataDictionary[scaleXName] = float(elementET.get("width"))
 		elementDataDictionary[scaleYName] = float(elementET.get("height"))
+		elementDataDictionary[offsetXName] = float(elementET.get("horizontal"))
+		elementDataDictionary[offsetYName] = float(elementET.get("vertical"))
 		
 		multiplyColorET = elementET.find("multiplyColor")
 		color = [1, 1, 1, 1]
@@ -877,7 +900,11 @@ class LensFlareElementSettingsPanel(bpy.types.Panel):
 		duplicateElement = row.operator("lens_flares.duplicate_flare_element", text = "", icon = "NEW")
 		duplicateElement.elementName = element.name
 		
-		layout.prop(element, elementPositionPath, text = "Position")
+		col = layout.column(align = True)
+		col.prop(element, elementPositionPath, text = "Position")
+		row = col.row(align = True)
+		row.prop(element, offsetXPath, text = "X Offset")
+		row.prop(element, offsetYPath, text = "Y Offset")
 		layout.prop(element, intensityPath, text = "Intensity")
 		
 		col = layout.column(align = True)
