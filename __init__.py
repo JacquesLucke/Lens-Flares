@@ -397,7 +397,7 @@ def newFlareElementEmpty(flareControler, startElement, endElement, camera):
 	setParentWithoutInverse(dataEmpty, flareControler)
 	setCustomProperty(dataEmpty, elementEmptyNamePropertyName, "Glow", description = "This name shows up in the element list.")
 	setCustomProperty(dataEmpty, avoidArtefactsOffsetName, camera[currentElementOffsetName], description = "Random offset of every object to avoid overlapping.")
-	setCustomProperty(dataEmpty, elementPositionName, 0.2, description = "Relative element position. 0: element is on target; 1: opposite side")
+	setCustomProperty(dataEmpty, elementPositionName, 0.0, description = "Relative element position. 0: element is on target; 1: opposite side")
 	setCustomProperty(dataEmpty, scaleXName, 1.0, min = 0.0, description = "Width of this element.")
 	setCustomProperty(dataEmpty, scaleYName, 1.0, min = 0.0, description = "Height of this element.")
 	setCustomProperty(dataEmpty, trackToCenterInfluenceName, 0.0, min = 0.0, max = 1.0, description = "0: normal; 1: rotate element to center")
@@ -746,7 +746,7 @@ def loadLensFlare(path):
 		elementDataDictionary[elementEmptyNamePropertyName] = getStringProperty(elementET, "name", "Flare Element")
 		elementDataDictionary[imagePathName] = elementsFolder + getStringProperty(elementET, "imageName", "circle.jpg")
 		
-		elementDataDictionary[elementPositionName] = getFloatProperty(elementET, "position", 0.2)
+		elementDataDictionary[elementPositionName] = getFloatProperty(elementET, "position", 0.0)
 		elementDataDictionary[intensityName] = getFloatProperty(elementET, "intensity", 1.0)
 		elementDataDictionary[additionalRotationName] = getIntProperty(elementET, "rotation", 0)
 		elementDataDictionary[trackToCenterInfluenceName] = getFloatProperty(elementET, "centerRotation", 0.0)
