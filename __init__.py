@@ -415,25 +415,17 @@ def setPositionConstraintOnFlareElement(element, startElement, endElement):
 	constraint = element.constraints.new(type = "LIMIT_LOCATION")
 	setUseMinMaxToTrue(constraint)
 	constraintPath = getConstraintPath(constraint)
-	
 	for val in [".min", ".max"]:
-		driver = newDriver(element, constraintPath + val + "_x")
-		linkTransformChannelToDriver(driver, "start", startElement, "LOC_X")
-		linkTransformChannelToDriver(driver, "end", endElement, "LOC_X")
-		linkFloatPropertyToDriver(driver, "position", element, elementPositionPath)
-		driver.expression = "start * (1-position) + end * position"
+		setPositionDriverOnFlareElementConstraint(element, startElement, endElement, constraintPath + val + "_x", "LOC_X")
+		setPositionDriverOnFlareElementConstraint(element, startElement, endElement, constraintPath + val + "_y", "LOC_Y")
+		setPositionDriverOnFlareElementConstraint(element, startElement, endElement, constraintPath + val + "_z", "LOC_Z")
 		
-		driver = newDriver(element, constraintPath + val + "_y")
-		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Y")
-		linkTransformChannelToDriver(driver, "end", endElement, "LOC_Y")
-		linkFloatPropertyToDriver(driver, "position", element, elementPositionPath)
-		driver.expression = "start * (1-position) + end * position"
-		
-		driver = newDriver(element, constraintPath + val + "_z")
-		linkTransformChannelToDriver(driver, "start", startElement, "LOC_Z")
-		linkTransformChannelToDriver(driver, "end", endElement, "LOC_Z")
-		linkFloatPropertyToDriver(driver, "position", element, elementPositionPath)
-		driver.expression = "start * (1-position) + end * position"
+def setPositionDriverOnFlareElementConstraint(element, startElement, endElement, pathToValue, channel):
+	driver = newDriver(element, pathToValue)
+	linkTransformChannelToDriver(driver, "start", startElement, channel)
+	linkTransformChannelToDriver(driver, "end", endElement, channel)
+	linkFloatPropertyToDriver(driver, "position", element, elementPositionPath)
+	driver.expression = "start * (1-position) + end * position"
 
 def newFlareElementPlane(image, elementEmpty, flareControler, camera):
 	plane = newPlane(name = flareElementPrefix, size = 0.1)
