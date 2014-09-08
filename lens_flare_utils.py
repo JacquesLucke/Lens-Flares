@@ -144,4 +144,7 @@ def getFileName(path):
 def setMinMaxTransparentBounces(amount):
 	bpy.context.scene.cycles.transparent_min_bounces = amount
 	bpy.context.scene.cycles.transparent_max_bounces = amount
+	
+def setDisplayTypeToWire(object):
+	object.draw_type = "WIRE"
 					

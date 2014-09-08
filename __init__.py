@@ -381,6 +381,8 @@ def newFlareElement(flareControler, image, name = "element"):
 	
 	setCustomProperty(elementEmpty, elementEmptyNamePropertyName, name)
 	
+	setDisplayTypeToWire(flareElement)
+	
 	return (elementEmpty, flareElement)
 	
 def newFlareElementEmpty(flareControler, startElement, endElement, camera):
