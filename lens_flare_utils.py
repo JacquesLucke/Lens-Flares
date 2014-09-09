@@ -172,9 +172,9 @@ def activateSceneLayer(layerIndex, hideOthers = True):
 		for i in range(len(bpy.context.scene.layers)):
 			if i != layerIndex: bpy.context.scene.layers[i] = False
 			
-def getEmptyLayerIndex():
+def getEmptyLayerIndex(fallback = 19):
 	usedLayers = bpy.context.area.spaces.active.layers_used
 	for i in range(len(usedLayers)):
 		if not usedLayers[i]: return i
-	return -1
+	return fallback
 	

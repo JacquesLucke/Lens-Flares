@@ -388,6 +388,7 @@ def newFlareElement(flareControler, image, name = "element"):
 	setDisplayTypeToWire(flareElement)
 	emptyLayer = getEmptyLayerIndex()
 	moveObjectToLayer(camera, emptyLayer, hideInOthers = False)
+	moveObjectToLayer(getCurrentTarget(flareControler), emptyLayer, hideInOthers = False)
 	moveObjectToLayer(element, emptyLayer)
 	moveObjectToLayer(flareElement, emptyLayer)
 	activateSceneLayer(emptyLayer)
@@ -806,7 +807,12 @@ def getActiveElement():
 	activeElement = bpy.data.objects.get(activeElementName)
 	if isPartOfFlareControler(activeElement, activeFlare): return activeElement
 	return None
-
+	
+def getCurrentTarget(flareControler):
+	return getFlareTargetConstraint(flareControler).target
+def getFlareTargetConstraint(flareControler):
+	return getTargetEmpty(flareControler).constraints[0]
+	
 	
 	
 # interface
@@ -861,7 +867,6 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 		updateActiveFlareName()
 		flare = getActiveFlare()
 		if flare is None: return
-		target = getTargetEmpty(flare)
 		self.bl_label = "Settings: " + flare[flareNamePropertyName]
 		
 		row = layout.row(align = True)
@@ -869,7 +874,7 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 		duplicateFlare = row.operator("lens_flares.duplicate_lens_flare", text = "", icon = "NEW")
 		duplicateFlare.flareName = flare.name
 		
-		layout.prop(target.constraints[0], 'target', text = "Target")
+		layout.prop(getFlareTargetConstraint(flare), 'target', text = "Target")
 		layout.prop(flare, intensityPath, text = "Intensity")
 				
 		elements = getDataElementsFromFlare(flare)
