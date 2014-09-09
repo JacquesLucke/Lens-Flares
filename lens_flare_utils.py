@@ -160,3 +160,21 @@ def getProperty(tree, name, fallback = 0):
 	if object is None: object = fallback
 	return object
 					
+def moveObjectToLayer(object, layerIndex, hideInOthers = True):
+	object.layers[layerIndex] = True
+	if hideInOthers:
+		for i in range(len(object.layers)):
+			if i != layerIndex: object.layers[i] = False
+			
+def activateSceneLayer(layerIndex, hideOthers = True):
+	bpy.context.scene.layers[layerIndex] = True
+	if hideOthers:
+		for i in range(len(bpy.context.scene.layers)):
+			if i != layerIndex: bpy.context.scene.layers[i] = False
+			
+def getEmptyLayerIndex():
+	usedLayers = bpy.context.area.spaces.active.layers_used
+	for i in range(len(usedLayers)):
+		if not usedLayers[i]: return i
+	return -1
+	

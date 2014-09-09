@@ -386,6 +386,11 @@ def newFlareElement(flareControler, image, name = "element"):
 	setCustomProperty(element, elementNamePropertyName, name)
 	
 	setDisplayTypeToWire(flareElement)
+	emptyLayer = getEmptyLayerIndex()
+	moveObjectToLayer(camera, emptyLayer, hideInOthers = False)
+	moveObjectToLayer(element, emptyLayer)
+	moveObjectToLayer(flareElement, emptyLayer)
+	activateSceneLayer(emptyLayer)
 	
 	return (element, flareElement)
 	
