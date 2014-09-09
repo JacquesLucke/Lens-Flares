@@ -55,7 +55,7 @@ cameraDirectionCalculatorPrefix = "camera direction calculator"
 startElementPrefix = "start element"
 endElementPrefix = "end element"
 flareElementEmptyPrefix = "flare element data"
-elementEmptyNamesContainerPrefix = "element data names container"
+elementNamesContainerPrefix = "element data names container"
 targetEmptyPrefix = "target empty"
 
 dofDistanceName = "dof distance"
@@ -87,8 +87,8 @@ cameraOfFlarePropertyName = "camera of this flare"
 startElementPropertyName = "start element"
 endElementPropertyName = "end element"
 elementNamePropertyName = "corresponding element"
-elementEmptyNamesContainerPropertyName = "element data names container"
-elementEmptyNamePropertyName = "element data name"
+elementNamesContainerPropertyName = "element data names container"
+elementNamePropertyName = "element data name"
 elementPlainNamePropertyName = "element plane name"
 flareNamePropertyName = "flare name"
 linkToFlareControlerPropertyName = "flare link from target"
@@ -110,7 +110,7 @@ offsetYPath = getDataPath(offsetYName)
 additionalRotationPath = getDataPath(additionalRotationName)
 trackToCenterInfluencePath = getDataPath(trackToCenterInfluenceName)
 intensityPath = getDataPath(intensityName)
-elementEmptyNamePropertyPath = getDataPath(elementEmptyNamePropertyName)
+elementNamePropertyPath = getDataPath(elementNamePropertyName)
 flareNamePropertyPath = getDataPath(flareNamePropertyName)
 
 
@@ -134,11 +134,11 @@ def newLensFlare(camera, target):
 	startElement = newStartElement(flareControler, camera, startDistanceCalculator)
 	endElement = newEndElement(flareControler, startElement, center, camera)
 	
-	elementEmptyNamesContainer = newElementEmptyNamesContainer(flareControler)
+	elementNamesContainer = newElementEmptyNamesContainer(flareControler)
 	
 	setCustomProperty(flareControler, startElementPropertyName, startElement.name)
 	setCustomProperty(flareControler, endElementPropertyName, endElement.name)
-	setCustomProperty(flareControler, elementEmptyNamesContainerPropertyName, elementEmptyNamesContainer.name)
+	setCustomProperty(flareControler, elementNamesContainerPropertyName, elementNamesContainer.name)
 	setCustomProperty(flareControler, targetNamePropertyName, targetEmpty.name)
 	setParentWithoutInverse(targetEmpty, camera)
 	makePartOfFlareControler(targetEmpty, flareControler)
@@ -148,7 +148,7 @@ def newLensFlare(camera, target):
 	startDistanceCalculator.hide = True
 	startElement.hide = True
 	endElement.hide = True
-	elementEmptyNamesContainer.hide = True
+	elementNamesContainer.hide = True
 	targetEmpty.hide = True
 	
 	setMinMaxTransparentBounces(512)
@@ -348,10 +348,10 @@ def setEndLocationDrivers(endElement, startElement, center):
 # element data names container
 	
 def newElementEmptyNamesContainer(flareControler):
-	elementEmptyNamesContainer = newEmpty(name = elementEmptyNamesContainerPrefix)
-	makePartOfFlareControler(elementEmptyNamesContainer, flareControler)
-	setParentWithoutInverse(elementEmptyNamesContainer, flareControler)
-	return elementEmptyNamesContainer
+	elementNamesContainer = newEmpty(name = elementNamesContainerPrefix)
+	makePartOfFlareControler(elementNamesContainer, flareControler)
+	setParentWithoutInverse(elementNamesContainer, flareControler)
+	return elementNamesContainer
 	
 
 	
@@ -360,11 +360,11 @@ def newElementEmptyNamesContainer(flareControler):
 #########################################
 
 def newFlareElementFromDictionary(flareControler, elementDataDictionary):
-	name = elementDataDictionary[elementEmptyNamePropertyName]
+	name = elementDataDictionary[elementNamePropertyName]
 	image = getImage(elementDataDictionary[imagePathName])
-	(elementEmpty, plane) = newFlareElement(flareControler, image, name)
-	setElementDataDictionaryOnElement(elementEmpty, elementDataDictionary)
-	return elementEmpty
+	(element, plane) = newFlareElement(flareControler, image, name)
+	setElementDataDictionaryOnElement(element, elementDataDictionary)
+	return element
 	
 def newFlareElement(flareControler, image, name = "element"):
 	camera = getCameraFromFlareControler(flareControler)
@@ -372,22 +372,22 @@ def newFlareElement(flareControler, image, name = "element"):
 	startElement = getStartElement(flareControler)
 	endElement = getEndElement(flareControler)
 	
-	elementEmpty = newFlareElementEmpty(flareControler, startElement, endElement, camera)
-	flareElement = newFlareElementPlane(image, elementEmpty, flareControler, camera)	
+	element = newFlareElementEmpty(flareControler, startElement, endElement, camera)
+	flareElement = newFlareElementPlane(image, element, flareControler, camera)	
 	
-	setCustomProperty(elementEmpty, elementPlainNamePropertyName, flareElement.name)
+	setCustomProperty(element, elementPlainNamePropertyName, flareElement.name)
 	
-	makePartOfFlareElement(elementEmpty, elementEmpty)
-	makePartOfFlareElement(flareElement, elementEmpty)
+	makePartOfFlareElement(element, element)
+	makePartOfFlareElement(flareElement, element)
 	
-	elementEmptyNamesContainer = getElementEmptyNamesContainer(flareControler)
-	appendObjectReference(elementEmptyNamesContainer, elementEmpty)
+	elementNamesContainer = getElementEmptyNamesContainer(flareControler)
+	appendObjectReference(elementNamesContainer, element)
 	
-	setCustomProperty(elementEmpty, elementEmptyNamePropertyName, name)
+	setCustomProperty(element, elementNamePropertyName, name)
 	
 	setDisplayTypeToWire(flareElement)
 	
-	return (elementEmpty, flareElement)
+	return (element, flareElement)
 	
 def newFlareElementEmpty(flareControler, startElement, endElement, camera):
 	element = newEmpty(name = flareElementEmptyPrefix)
@@ -400,7 +400,7 @@ def newFlareElementEmpty(flareControler, startElement, endElement, camera):
 	return element
 	
 def setCustomPropertiesOnFlareElement(element, camera):
-	setCustomProperty(element, elementEmptyNamePropertyName, "Glow", description = "This name shows up in the element list.")
+	setCustomProperty(element, elementNamePropertyName, "Glow", description = "This name shows up in the element list.")
 	setCustomProperty(element, avoidArtefactsOffsetName, camera[currentElementOffsetName], description = "Random offset of every object to avoid overlapping.")
 	setCustomProperty(element, elementPositionName, 0.0, description = "Relative element position. 0: element is on target; 1: opposite side")
 	setCustomProperty(element, scaleXName, 1.0, min = 0.0, description = "Width of this element.")
@@ -427,7 +427,7 @@ def setPositionDriverOnFlareElementConstraint(element, startElement, endElement,
 	linkFloatPropertyToDriver(driver, "position", element, elementPositionPath)
 	driver.expression = "start * (1-position) + end * position"
 
-def newFlareElementPlane(image, elementEmpty, flareControler, camera):
+def newFlareElementPlane(image, element, flareControler, camera):
 	plane = newPlane(name = flareElementPrefix, size = 0.1)
 	makePartOfFlareControler(plane, flareControler)
 	setCustomProperty(plane, planeWidthFactorName, image.size[0] / image.size[1])
@@ -435,13 +435,13 @@ def newFlareElementPlane(image, elementEmpty, flareControler, camera):
 	material = newCyclesFlareMaterial(image)
 	setMaterialOnObject(plane, material)
 	
-	setParentWithoutInverse(plane, elementEmpty)
-	setScaleConstraintOnElementPlane(plane, elementEmpty, camera)
-	setTrackToCenterConstraintOnElementPlane(plane, elementEmpty, camera)
+	setParentWithoutInverse(plane, element)
+	setScaleConstraintOnElementPlane(plane, element, camera)
+	setTrackToCenterConstraintOnElementPlane(plane, element, camera)
 	limitXYRotationOnElementPlane(plane)
-	setLimitLocationConstraintOnElementPlane(plane, elementEmpty, camera)
-	setIntensityDriverOnElementPlane(plane, elementEmpty, flareControler)
-	setAdditionalRotationDriverOnElementPlane(plane, elementEmpty)
+	setLimitLocationConstraintOnElementPlane(plane, element, camera)
+	setIntensityDriverOnElementPlane(plane, element, flareControler)
+	setAdditionalRotationDriverOnElementPlane(plane, element)
 	
 	return plane
 	
@@ -578,14 +578,14 @@ def getSelectedFlareElementEmpties():
 	selection = getSelectedObjects()
 	for object in selection:
 		if hasFlareElementAttribute(object):
-			elementEmpty = getCorrespondingElement(object)
-			if elementEmpty not in flareElementEmpties and elementEmpty is not None:
-				flareElementEmpties.append(elementEmpty)
+			element = getCorrespondingElement(object)
+			if element not in flareElementEmpties and element is not None:
+				flareElementEmpties.append(element)
 	return flareElementEmpties
 	
 def getDataElementsFromFlare(flareControler):
-	elementEmptyNamesContainer = getElementEmptyNamesContainer(flareControler)
-	elementEmpties = getObjectReferences(elementEmptyNamesContainer)
+	elementNamesContainer = getElementEmptyNamesContainer(flareControler)
+	elementEmpties = getObjectReferences(elementNamesContainer)
 	return elementEmpties
 	
 def getCameraFromFlareControler(flareControler):
@@ -599,7 +599,7 @@ def getElementEmptyObjects(flareControler):
 	container = getElementEmptyNamesContainer(flareControler)
 	return getObjectReferences(container)
 def getElementEmptyNamesContainer(flareControler):
-	return bpy.data.objects[flareControler[elementEmptyNamesContainerPropertyName]]
+	return bpy.data.objects[flareControler[elementNamesContainerPropertyName]]
 
 def isPartOfAnyFlareControler(object):
 	return getCorrespondingFlareControler(object) is not None
@@ -656,7 +656,7 @@ def setFlareDataDictionaryOnFlare(flareControler, flareDataDictionary):
 def getElementDataDictionaryFromElement(element):
 	plane = getPlaneFromElement(element)
 	return { 	elementPositionName : element[elementPositionName],
-				elementEmptyNamePropertyName : element[elementEmptyNamePropertyName],
+				elementNamePropertyName : element[elementNamePropertyName],
 				imagePathName : getImageFromElementEmpty(element).filepath,
 				scaleXName : element[scaleXName],
 				scaleYName : element[scaleYName],
@@ -667,17 +667,17 @@ def getElementDataDictionaryFromElement(element):
 				additionalRotationName : element[additionalRotationName],
 				colorMultiplyName : getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value }
 	
-def setElementDataDictionaryOnElement(elementEmpty, dataDictionary):	
-	plane = getPlaneFromElement(elementEmpty)
-	elementEmpty[elementEmptyNamePropertyName] = dataDictionary[elementEmptyNamePropertyName]
-	elementEmpty[elementPositionName] = dataDictionary[elementPositionName]
-	elementEmpty[scaleXName] = dataDictionary[scaleXName]
-	elementEmpty[scaleYName] = dataDictionary[scaleYName]
-	elementEmpty[offsetXName] = dataDictionary[offsetXName]
-	elementEmpty[offsetYName] = dataDictionary[offsetYName]
-	elementEmpty[trackToCenterInfluenceName] = dataDictionary[trackToCenterInfluenceName]
-	elementEmpty[intensityName] = dataDictionary[intensityName]
-	elementEmpty[additionalRotationName] = dataDictionary[additionalRotationName]
+def setElementDataDictionaryOnElement(element, dataDictionary):	
+	plane = getPlaneFromElement(element)
+	element[elementNamePropertyName] = dataDictionary[elementNamePropertyName]
+	element[elementPositionName] = dataDictionary[elementPositionName]
+	element[scaleXName] = dataDictionary[scaleXName]
+	element[scaleYName] = dataDictionary[scaleYName]
+	element[offsetXName] = dataDictionary[offsetXName]
+	element[offsetYName] = dataDictionary[offsetYName]
+	element[trackToCenterInfluenceName] = dataDictionary[trackToCenterInfluenceName]
+	element[intensityName] = dataDictionary[intensityName]
+	element[additionalRotationName] = dataDictionary[additionalRotationName]
 	setImagePathOnElementPlane(plane, dataDictionary[imagePathName])
 	setMultiplyColorOnElementPlane(plane, dataDictionary[colorMultiplyName])
 	
@@ -687,15 +687,15 @@ def deleteFlare(flareControler):
 			delete(object)
 	delete(flareControler)
 	
-def deleteFlareElement(elementEmpty):
-	flareControler = getCorrespondingFlareControler(elementEmpty)
-	delete(getPlaneFromElement(elementEmpty))
-	delete(elementEmpty)
+def deleteFlareElement(element):
+	flareControler = getCorrespondingFlareControler(element)
+	delete(getPlaneFromElement(element))
+	delete(element)
 	cleanReferenceList(getElementEmptyNamesContainer(flareControler))
 	
-def duplicateFlareElement(elementEmpty):
-	flareControler = getCorrespondingFlareControler(elementEmpty)
-	elementDataDictionary = getElementDataDictionaryFromElement(elementEmpty)
+def duplicateFlareElement(element):
+	flareControler = getCorrespondingFlareControler(element)
+	elementDataDictionary = getElementDataDictionaryFromElement(element)
 	newElement = newFlareElementFromDictionary(flareControler, elementDataDictionary)
 	return newElement
 	
@@ -722,7 +722,7 @@ def saveLensFlare(flareControler, path):
 		plane = getPlaneFromElement(element)
 		el = ET.SubElement(flare, "Element")
 		el.set("imageName", str(getImageFromElementEmpty(element).name))
-		el.set("name", element[elementEmptyNamePropertyName])
+		el.set("name", element[elementNamePropertyName])
 		
 		el.set("position", str(element[elementPositionName]))
 		el.set("intensity", str(element[intensityName]))
@@ -752,7 +752,7 @@ def loadLensFlare(path):
 	elementDatas = []
 	for elementET in flareET:
 		elementDataDictionary = { }
-		elementDataDictionary[elementEmptyNamePropertyName] = getStringProperty(elementET, "name", "Flare Element")
+		elementDataDictionary[elementNamePropertyName] = getStringProperty(elementET, "name", "Flare Element")
 		elementDataDictionary[imagePathName] = elementsFolder + getStringProperty(elementET, "imageName", "circle.jpg")
 		
 		elementDataDictionary[elementPositionName] = getFloatProperty(elementET, "position", 0.0)
@@ -877,8 +877,8 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 				row = col.row(align = True)
 				row.scale_y = 1.35
 				if element == activeElement: 
-					selectElement = row.operator("lens_flares.select_flare_element", text = element[elementEmptyNamePropertyName], icon = "PINNED")
-				else: selectElement = row.operator("lens_flares.select_flare_element", text = element[elementEmptyNamePropertyName])
+					selectElement = row.operator("lens_flares.select_flare_element", text = element[elementNamePropertyName], icon = "PINNED")
+				else: selectElement = row.operator("lens_flares.select_flare_element", text = element[elementNamePropertyName])
 				selectElement.elementName = element.name
 				deleteElement = row.operator("lens_flares.delete_flare_element", text = "", icon = "X")
 				deleteElement.elementName = element.name
@@ -905,7 +905,7 @@ class LensFlareElementSettingsPanel(bpy.types.Panel):
 		plane = getPlaneFromElement(element)
 		
 		row = layout.row(align = True)
-		row.prop(element, elementEmptyNamePropertyPath, text = "Name")
+		row.prop(element, elementNamePropertyPath, text = "Name")
 		duplicateElement = row.operator("lens_flares.duplicate_flare_element", text = "", icon = "NEW")
 		duplicateElement.elementName = element.name
 		
@@ -952,8 +952,8 @@ class NewFlareElement(bpy.types.Operator):
 	filepath = bpy.props.StringProperty(subtype="FILE_PATH")
 
 	def execute(self, context):
-		(elementEmpty, flareElement) = newFlareElement(bpy.data.objects[self.flareName], getImage(self.filepath), getFileName(self.filepath))
-		setActiveElementName(elementEmpty.name)
+		(element, flareElement) = newFlareElement(bpy.data.objects[self.flareName], getImage(self.filepath), getFileName(self.filepath))
+		setActiveElementName(element.name)
 		return {'FINISHED'}
 
 	def invoke(self, context, event):
