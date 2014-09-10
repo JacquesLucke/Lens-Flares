@@ -93,6 +93,7 @@ elementPlainNamePropertyName = "element plane name"
 flareNamePropertyName = "flare name"
 linkToFlareControlerPropertyName = "flare link from target"
 targetNamePropertyName = "target empty"
+flareLayerPropertyName = "flare layer index"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -152,11 +153,26 @@ def newLensFlare(camera, target):
 	targetEmpty.hide = True
 	
 	setMinMaxTransparentBounces(512)
+	
+	layerIndex = getLensFlareLayerIndex(camera)
+	moveObjectToLayer(flareControler, layerIndex)
+	moveObjectToLayer(center, layerIndex)
+	moveObjectToLayer(targetEmpty, layerIndex)
+	moveObjectToLayer(angleCalculator, layerIndex)
+	moveObjectToLayer(startDistanceCalculator, layerIndex)
+	moveObjectToLayer(startElement, layerIndex)
+	moveObjectToLayer(endElement, layerIndex)
+	activateSceneLayer(layerIndex, hideOthers = False)
 	return flareControler
 	
 def setCurrentOffsetPropertyOnCamera(camera):
 	if currentElementOffsetName not in camera:
 		setCustomProperty(camera, currentElementOffsetName, -0.002)
+		
+def getLensFlareLayerIndex(camera):
+	if flareLayerPropertyName not in camera:
+		setCustomProperty(camera, flareLayerPropertyName, getEmptyLayerIndex())
+	return camera[flareLayerPropertyName]
 		
 def newTargetEmpty(target):
 	targetEmpty = newEmpty(name = targetEmptyPrefix)
@@ -386,12 +402,11 @@ def newFlareElement(flareControler, image, name = "element"):
 	setCustomProperty(element, elementNamePropertyName, name)
 	
 	setDisplayTypeToWire(flareElement)
-	emptyLayer = getEmptyLayerIndex()
-	moveObjectToLayer(camera, emptyLayer, hideInOthers = False)
-	moveObjectToLayer(getCurrentTarget(flareControler), emptyLayer, hideInOthers = False)
-	moveObjectToLayer(element, emptyLayer)
-	moveObjectToLayer(flareElement, emptyLayer)
-	activateSceneLayer(emptyLayer)
+	layerIndex = getLensFlareLayerIndex(camera)
+	moveObjectToLayer(camera, layerIndex, hideInOthers = False)
+	moveObjectToLayer(getCurrentTarget(flareControler), layerIndex, hideInOthers = False)
+	moveObjectToLayer(element, layerIndex)
+	moveObjectToLayer(flareElement, layerIndex)
 	
 	return (element, flareElement)
 	

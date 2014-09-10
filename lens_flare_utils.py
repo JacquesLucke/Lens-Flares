@@ -89,11 +89,15 @@ def getCameraFromObject(object):
 	return bpy.data.cameras[object.name]
 	
 def delete(object):
+	makeVisible(object)
+	object.name = "DELETED" + object.name
 	deselectAll()
 	object.select = True
-	object.hide = False
-	object.name = "DELETED" + object.name
 	bpy.ops.object.delete()
+	
+def makeVisible(object):
+	object.hide = False
+	object.layers[getActiveSceneLayerIndex()] = True
 	
 def getCurrentFrame():
 	return bpy.context.screen.scene.frame_current
@@ -154,7 +158,7 @@ def getStringProperty(tree, name, fallback = ""):
 def getFloatProperty(tree, name, fallback = 0.0):
 	return float(getProperty(tree, name, fallback))
 def getIntProperty(tree, name, fallback = 0):
-	return int(getProperty(tree, name, fallback))
+	return int(float(getProperty(tree, name, fallback)))
 def getProperty(tree, name, fallback = 0):
 	object = tree.get(name)
 	if object is None: object = fallback
@@ -177,4 +181,9 @@ def getEmptyLayerIndex(fallback = 19):
 	for i in range(len(usedLayers)):
 		if not usedLayers[i]: return i
 	return fallback
+	
+def getActiveSceneLayerIndex():
+	usedLayers = bpy.context.area.spaces.active.layers_used
+	for i in range(len(usedLayers)):
+		if usedLayers[i]: return i
 	
