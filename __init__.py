@@ -163,6 +163,18 @@ def newLensFlare(camera, target):
 	moveObjectToLayer(startElement, layerIndex)
 	moveObjectToLayer(endElement, layerIndex)
 	activateSceneLayer(layerIndex, hideOthers = False)
+	flareRenderLayer = setupRenderLayer(layerIndex)
+	
+	nodeTree = getCompositingNodeTree()
+	removeNodes(nodeTree)
+	renderLayerNode = newRenderLayerNode(nodeTree)
+	flareLayerNode = newRenderLayerNode(nodeTree, flareRenderLayer.name)
+	colorMixNode = newColorMixNode(nodeTree, type = "ADD", factor = 1.0)
+	outputNode = newCompositorOutputNode(nodeTree)
+	
+	linkToMixShader(nodeTree, renderLayerNode.outputs[0], flareLayerNode.outputs[0], colorMixNode)
+	newNodeLink(nodeTree, colorMixNode.outputs[0], outputNode.inputs[0])
+	
 	return flareControler
 	
 def setCurrentOffsetPropertyOnCamera(camera):
@@ -179,6 +191,18 @@ def newTargetEmpty(target):
 	constraint = targetEmpty.constraints.new(type = "COPY_LOCATION")
 	constraint.target = target
 	return targetEmpty
+	
+def setupRenderLayer(flareLayerIndex):
+	renderLayer = newRenderLayer(name = "Flare")
+	renderLayer.samples = 1
+	renderLayer.use_sky = False
+	renderLayer.use_strand = False
+	activateRenderLayerLayer(renderLayer, flareLayerIndex)
+	for layer in getAllRenderLayers():
+		if layer != renderLayer:
+			layer.layers[flareLayerIndex] = False
+	return renderLayer
+	
 
 # camera direction calculator
 
@@ -950,6 +974,7 @@ class LensFlareElementSettingsPanel(bpy.types.Panel):
 		col.prop(element, scaleYPath, text = "Height")
 		
 		layout.prop(getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2], "default_value")
+		
 		
 		
 # operators

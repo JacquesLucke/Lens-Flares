@@ -84,9 +84,9 @@ def isTextObject(object):
 	return False
 	
 def isCameraObject(object):
-	return bpy.data.cameras.get(object.name) is not None
+	return bpy.data.cameras.get(object.data.name) is not None
 def getCameraFromObject(object):
-	return bpy.data.cameras[object.name]
+	return bpy.data.cameras[object.data.name]
 	
 def delete(object):
 	makeVisible(object)
@@ -183,7 +183,22 @@ def getEmptyLayerIndex(fallback = 19):
 	return fallback
 	
 def getActiveSceneLayerIndex():
-	usedLayers = bpy.context.area.spaces.active.layers_used
-	for i in range(len(usedLayers)):
-		if usedLayers[i]: return i
+	return bpy.context.scene.active_layer
 	
+def setActiveSceneLayerIndex(layerIndex):
+	bpy.context.scene.active_layer = layerIndex
+		
+def newRenderLayer(name = "Render Layer"):
+	return bpy.context.scene.render.layers.new(name)
+	
+def getAllRenderLayers():
+	return bpy.context.scene.render.layers
+	
+def activateRenderLayerLayer(renderLayer, layerIndex = 0, disableOthers = True):
+	renderLayer.layers[layerIndex] = True
+	if disableOthers:
+		for i in range(len(renderLayer.layers)):
+			if i != layerIndex: renderLayer.layers[i] = False
+			
+def getActiveScene():
+	return bpy.context.scene

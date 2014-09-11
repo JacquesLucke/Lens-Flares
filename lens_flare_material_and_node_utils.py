@@ -50,7 +50,10 @@ def newTransparentNode(nodeTree):
 def newMixShader(nodeTree):
 	return nodeTree.nodes.new("ShaderNodeMixShader")
 def newColorMixNode(nodeTree, type = "MIX", factor = 0.5, default1 = [0.5, 0.5, 0.5, 1.0], default2 = [0.5, 0.5, 0.5, 1.0]):
-	node = nodeTree.nodes.new("ShaderNodeMixRGB")
+	if isShaderNodeTree(nodeTree):
+		node = nodeTree.nodes.new("ShaderNodeMixRGB")
+	elif isCompositorNodeTree(nodeTree):
+		node = nodeTree.nodes.new("CompositorNodeMixRGB")
 	node.blend_type = type
 	node.inputs[0].default_value = factor
 	node.inputs[1].default_value = default1
@@ -68,6 +71,20 @@ def newRerouteNode(nodeTree):
 	return nodeTree.nodes.new("NodeReroute")
 def newColorRampNode(nodeTree):
 	return nodeTree.nodes.new("ShaderNodeValToRGB")
+	
+def newRenderLayerNode(nodeTree, layerName = ""):
+	node = nodeTree.nodes.new("CompositorNodeRLayers")
+	if layerName != "":
+		node.layer = layerName
+	return node
+def newCompositorOutputNode(nodeTree):
+	return nodeTree.nodes.new("CompositorNodeComposite")
+	
+def isCompositorNodeTree(nodeTree):
+	return nodeTree.type == "COMPOSITING"
+def isShaderNodeTree(nodeTree):
+	return nodeTree.type == "SHADER"
+
 	
 def linkToMixShader(nodeTree, socket1, socket2, mixShader, factor = None):
 	if factor is not None: newNodeLink(nodeTree, mixShader.inputs[0], factor)
@@ -87,3 +104,8 @@ def getNodeWithNameInObject(object, name):
 		node = slot.material.node_tree.nodes.get(name)
 		if node is not None: return node
 	return None
+	
+def getCompositingNodeTree():
+	scene = getActiveScene()
+	scene.use_nodes = True
+	return scene.node_tree
