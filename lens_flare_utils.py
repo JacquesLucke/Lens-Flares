@@ -191,6 +191,9 @@ def setActiveSceneLayerIndex(layerIndex):
 def newRenderLayer(name = "Render Layer"):
 	return bpy.context.scene.render.layers.new(name)
 	
+def getRenderLayers():
+	return bpy.context.scene.render.layers
+	
 def getAllRenderLayers():
 	return bpy.context.scene.render.layers
 	

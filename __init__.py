@@ -94,6 +94,7 @@ flareNamePropertyName = "flare name"
 linkToFlareControlerPropertyName = "flare link from target"
 targetNamePropertyName = "target empty"
 flareLayerPropertyName = "flare layer index"
+renderLayerName = "Flare"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -193,7 +194,10 @@ def newTargetEmpty(target):
 	return targetEmpty
 	
 def setupRenderLayer(flareLayerIndex):
-	renderLayer = newRenderLayer(name = "Flare")
+	renderLayers = getRenderLayers()
+	if renderLayerName in renderLayers: return renderLayers[renderLayerName]
+	
+	renderLayer = newRenderLayer(name = renderLayerName)
 	renderLayer.samples = 1
 	renderLayer.use_sky = False
 	renderLayer.use_strand = False
