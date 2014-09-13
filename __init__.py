@@ -977,6 +977,7 @@ class SaveLensFlare(bpy.types.Operator):
 		return{"FINISHED"}
 		
 	def invoke(self, context, event):
+		self.filepath = presetsFolder
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 		
