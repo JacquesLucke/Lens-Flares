@@ -95,6 +95,7 @@ elementPlainNamePropertyName = "element plane name"
 flareNamePropertyName = "flare name"
 linkToFlareControlerPropertyName = "flare link from target"
 targetNamePropertyName = "target empty"
+angleNamePropertyName = "angle calculator"
 
 anglePath = getDataPath(angleName)
 startDistancePath = getDataPath(startDistanceName)
@@ -142,6 +143,7 @@ def newLensFlare(camera, target):
 	setCustomProperty(flareControler, endElementPropertyName, endElement.name)
 	setCustomProperty(flareControler, elementNamesContainerPropertyName, elementNamesContainer.name)
 	setCustomProperty(flareControler, targetNamePropertyName, targetEmpty.name)
+	setCustomProperty(flareControler, angleNamePropertyName, angleCalculator.name)
 	setParentWithoutInverse(targetEmpty, camera)
 	makePartOfFlareControler(targetEmpty, flareControler)
 	
