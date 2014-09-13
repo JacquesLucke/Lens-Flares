@@ -815,7 +815,10 @@ class LensFlaresPanel(bpy.types.Panel):
 	bl_context = "objectmode"
 	
 	def draw(self, context):
-		layout = self.layout		
+		layout = self.layout	
+
+		updateActiveFlareName()
+		updateActiveElementName()
 		
 		flares = getAllFlares()
 		activeFlare = getActiveFlare()
@@ -853,7 +856,6 @@ class LensFlareSettingsPanel(bpy.types.Panel):
 	def draw(self, context):
 		layout = self.layout
 		
-		updateActiveFlareName()
 		flare = getActiveFlare()
 		if flare is None: return
 		target = getTargetEmpty(flare)
@@ -899,7 +901,6 @@ class LensFlareElementSettingsPanel(bpy.types.Panel):
 	def draw(self, context):
 		layout = self.layout
 		
-		updateActiveElementName()
 		element = getActiveElement()
 		if element is None: return
 		plane = getPlaneFromElement(element)
