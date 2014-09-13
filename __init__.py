@@ -43,8 +43,10 @@ bl_info = {
 	
 activeFlareName = ""
 activeElementName = ""
-	
-elementsFolder = inspect.getfile(inspect.currentframe())[0:-len("__init__.py")] + "elements\\"
+
+addonFolder = inspect.getfile(inspect.currentframe())[0:-len("__init__.py")]
+elementsFolder = addonFolder + "elements\\"
+presetsFolder = addonFolder + "presets\\"
 	
 flareControlerPrefix = "flare controler"
 angleCalculatorPrefix = "angle calculator"
@@ -990,7 +992,7 @@ class LoadLensFlare(bpy.types.Operator):
 		return{"FINISHED"}
 		
 	def invoke(self, context, event):
-		self.filepath = "F:\\Projekte\\Blender Flares Addon\\testSave.lf"
+		self.filepath = presetsFolder
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 		
