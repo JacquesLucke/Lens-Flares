@@ -925,7 +925,7 @@ class LensFlareElementSettingsPanel(bpy.types.Panel):
 		col.prop(element, scaleXPath, text = "Width")
 		col.prop(element, scaleYPath, text = "Height")
 		
-		layout.prop(getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2], "default_value")
+		layout.prop(getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2], "default_value", text = "Color")
 		
 		
 # operators
