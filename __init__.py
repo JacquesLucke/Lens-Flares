@@ -544,8 +544,6 @@ def setLimitLocationConstraintOnElementPlane(plane, element, camera):
 		driver.expression = "offset*distance"
 		
 def setIntensityDriverOnElementPlane(plane, element, flareControler):
-	angleCalculator = getAngleCalculator(flareControler)
-	
 	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value")
 	linkFloatPropertyToDriver(driver, "objectIntensity", element, intensityPath)
 	linkFloatPropertyToDriver(driver, "flareIntensity", flareControler, intensityPath)
