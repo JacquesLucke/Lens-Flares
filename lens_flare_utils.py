@@ -186,7 +186,8 @@ def getActiveSceneLayerIndex():
 	return bpy.context.scene.active_layer
 	
 def setActiveSceneLayerIndex(layerIndex):
-	bpy.context.scene.active_layer = layerIndex
+	bpy.context.scene.layers[layerIndex] = False
+	bpy.context.scene.layers[layerIndex] = True
 		
 def newRenderLayer(name = "Render Layer"):
 	return bpy.context.scene.render.layers.new(name)
