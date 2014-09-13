@@ -83,6 +83,7 @@ intensityNodeName = "intensity"
 intensityName = "intensity"
 imageNodeName = "image node"
 colorMultiplyNodeName = "color multiply node"
+emissionNodeName = "emission node"
 childOfFlarePropertyName = "child of flare"
 targetPropertyName = "flare target"
 cameraOfFlarePropertyName = "camera of this flare"
@@ -471,6 +472,7 @@ def newCyclesFlareMaterial(image):
 	intensityNode.name = intensityNodeName
 	imageNode.name = imageNodeName
 	colorMultiply.name = colorMultiplyNodeName
+	emission.name = emissionNodeName
 	
 	newNodeLink(nodeTree, textureCoordinatesNode.outputs["Generated"], imageNode.inputs[0])
 	newNodeLink(nodeTree, imageNode.outputs[0], colorRamp.inputs[0])
@@ -542,6 +544,8 @@ def setLimitLocationConstraintOnElementPlane(plane, element, camera):
 		driver.expression = "offset*distance"
 		
 def setIntensityDriverOnElementPlane(plane, element, flareControler):
+	angleCalculator = getAngleCalculator(flareControler)
+	
 	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value")
 	linkFloatPropertyToDriver(driver, "objectIntensity", element, intensityPath)
 	linkFloatPropertyToDriver(driver, "flareIntensity", flareControler, intensityPath)
@@ -599,6 +603,8 @@ def getStartElement(flareControler):
 	return bpy.data.objects[flareControler[startElementPropertyName]]
 def getEndElement(flareControler):
 	return bpy.data.objects[flareControler[endElementPropertyName]]
+def getAngleCalculator(flareControler):
+	return bpy.data.objects[flareControler[angleNamePropertyName]]
 def getElementEmptyObjects(flareControler):
 	container = getElementEmptyNamesContainer(flareControler)
 	return getObjectReferences(container)
