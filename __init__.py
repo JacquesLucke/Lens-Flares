@@ -120,9 +120,9 @@ flareNamePropertyPath = getDataPath(flareNamePropertyName)
 # new lens flare
 ###################################
 
-def newLensFlareFromDictionary(camera, target, flareDataDictionary):
+def newLensFlareFromData(camera, target, flareData):
 	flareControler = newLensFlare(camera, target)
-	setFlareDataDictionaryOnFlare(flareControler, flareDataDictionary)
+	flareData.setDataOnFlareControler(flareControler)
 	return flareControler
 
 def newLensFlare(camera, target):
@@ -642,14 +642,6 @@ def setImagePathOnElementPlane(plane, imagePath):
 def setMultiplyColorOnElementPlane(plane, color):
 	getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value = color
 	
-def getFlareDataDictionaryFromFlare(flareControler):
-	return {	flareNamePropertyName : flareControler[flareNamePropertyName],
-				intensityName : flareControler[intensityName] }
-				
-def setFlareDataDictionaryOnFlare(flareControler, flareDataDictionary):
-	flareControler[flareNamePropertyName] = flareDataDictionary[flareNamePropertyName]
-	flareControler[intensityName] = flareDataDictionary[intensityName]
-	
 def deleteFlare(flareControler):
 	for object in bpy.data.objects:
 		if isPartOfFlareControler(object, flareControler) and object != flareControler:
@@ -669,15 +661,15 @@ def duplicateFlareElement(element):
 	return newElement
 	
 def duplicateLensFlare(flareControler):
-	flareDataDictionary = getFlareDataDictionaryFromFlare(flareControler)
+	flareData = LensFlareData.FromFlareControler(flareControler)
 	elements = getElementEmptyObjects(flareControler)
 	elementDatas = []
 	for element in elements:
 		elementDatas.append(FlareElementData.FromElement(element))
-	generateLensFlare(getActiveCamera(), getActive(), flareDataDictionary, elementDatas)
+	generateLensFlare(getActiveCamera(), getActive(), flareData, elementDatas)
 	
-def generateLensFlare(camera, target, flareDataDictionary, elementDatas):
-	flareControler = newLensFlareFromDictionary(camera, target, flareDataDictionary)
+def generateLensFlare(camera, target, flareData, elementDatas):
+	flareControler = newLensFlareFromData(camera, target, flareData)
 	for elementData in elementDatas:
 		newFlareElementFromData(flareControler, elementData)
 	
@@ -709,6 +701,23 @@ def saveLensFlare(flareControler, path):
 		multiplyColor.set("blue", str(elementData.color[2]))
 	
 	ET.ElementTree(flare).write(path)
+	
+class LensFlareData:
+	def __init__(self, 	name = "lens flare",
+						intensity = 1.0):
+		self.name = name
+		self.intensity = intensity
+		
+	def setDataOnFlareControler(self, flareControler):
+		flareControler[flareNamePropertyName] = self.name
+		flareControler[intensityName] = self.intensity
+		
+	def fromFlareControler(flareControler):
+		flareData = LensFlareData()
+		flareData.name = flareControler[flareNamePropertyName]
+		flareData.intensity = flareControler[intensityName]
+		return flareData
+	FromFlareControler = staticmethod(fromFlareControler)
 	
 class FlareElementData:
 	def __init__(self, 	name = "flare element", 
@@ -776,9 +785,9 @@ def loadLensFlare(path):
 	tree = ET.parse(path)
 	flareET = tree.getroot()
 	
-	flareDataDictionary = { }
-	flareDataDictionary[flareNamePropertyName] = getStringProperty(flareET, "name", "Lens Flare")
-	flareDataDictionary[intensityName] = getFloatProperty(flareET, "intensity", 1.0)
+	flareData = LensFlareData()
+	flareData.name = getStringProperty(flareET, "name", "Lens Flare")
+	flareData.intensity = getFloatProperty(flareET, "intensity", 1.0)
 	
 	elementDatas = []
 	for elementET in flareET:
@@ -805,7 +814,7 @@ def loadLensFlare(path):
 		elementDatas.append(elementData)
 		
 
-	generateLensFlare(getActiveCamera(), getActive(), flareDataDictionary, elementDatas)
+	generateLensFlare(getActiveCamera(), getActive(), flareData, elementDatas)
 
 def updateActiveFlareName():
 	flareControler = getCorrespondingFlareControler(getActive())
