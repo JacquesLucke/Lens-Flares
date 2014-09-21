@@ -363,11 +363,11 @@ def newElementEmptyNamesContainer(flareControler):
 # new element
 #########################################
 
-def newFlareElementFromDictionary(flareControler, elementDataDictionary):
-	name = elementDataDictionary[elementNamePropertyName]
-	image = getImage(elementDataDictionary[imagePathName])
+def newFlareElementFromData(flareControler, elementData):
+	name = elementData.name
+	image = getImage(elementData.getImagePath())
 	(element, plane) = newFlareElement(flareControler, image, name)
-	setElementDataDictionaryOnElement(element, elementDataDictionary)
+	elementData.setDataOnElement(element)
 	return element
 	
 def newFlareElement(flareControler, image, name = "element"):
@@ -650,34 +650,6 @@ def setFlareDataDictionaryOnFlare(flareControler, flareDataDictionary):
 	flareControler[flareNamePropertyName] = flareDataDictionary[flareNamePropertyName]
 	flareControler[intensityName] = flareDataDictionary[intensityName]
 	
-def getElementDataDictionaryFromElement(element):
-	plane = getPlaneFromElement(element)
-	return { 	elementPositionName : element[elementPositionName],
-				elementNamePropertyName : element[elementNamePropertyName],
-				imagePathName : getImageFromElementEmpty(element).filepath,
-				scaleXName : element[scaleXName],
-				scaleYName : element[scaleYName],
-				offsetXName : element[offsetXName],
-				offsetYName : element[offsetYName],
-				trackToCenterInfluenceName : element[trackToCenterInfluenceName],
-				intensityName : element[intensityName],
-				additionalRotationName : element[additionalRotationName],
-				colorMultiplyName : getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value }
-	
-def setElementDataDictionaryOnElement(element, dataDictionary):	
-	plane = getPlaneFromElement(element)
-	element[elementNamePropertyName] = dataDictionary[elementNamePropertyName]
-	element[elementPositionName] = dataDictionary[elementPositionName]
-	element[scaleXName] = dataDictionary[scaleXName]
-	element[scaleYName] = dataDictionary[scaleYName]
-	element[offsetXName] = dataDictionary[offsetXName]
-	element[offsetYName] = dataDictionary[offsetYName]
-	element[trackToCenterInfluenceName] = dataDictionary[trackToCenterInfluenceName]
-	element[intensityName] = dataDictionary[intensityName]
-	element[additionalRotationName] = dataDictionary[additionalRotationName]
-	setImagePathOnElementPlane(plane, dataDictionary[imagePathName])
-	setMultiplyColorOnElementPlane(plane, dataDictionary[colorMultiplyName])
-	
 def deleteFlare(flareControler):
 	for object in bpy.data.objects:
 		if isPartOfFlareControler(object, flareControler) and object != flareControler:
@@ -692,8 +664,8 @@ def deleteFlareElement(element):
 	
 def duplicateFlareElement(element):
 	flareControler = getCorrespondingFlareControler(element)
-	elementDataDictionary = getElementDataDictionaryFromElement(element)
-	newElement = newFlareElementFromDictionary(flareControler, elementDataDictionary)
+	elementData = FlareElementData.FromElement(element)
+	newElement = newFlareElementFromData(flareControler, elementData)
 	return newElement
 	
 def duplicateLensFlare(flareControler):
@@ -701,13 +673,13 @@ def duplicateLensFlare(flareControler):
 	elements = getElementEmptyObjects(flareControler)
 	elementDatas = []
 	for element in elements:
-		elementDatas.append(getElementDataDictionaryFromElement(element))
+		elementDatas.append(FlareElementData.FromElement(element))
 	generateLensFlare(getActiveCamera(), getActive(), flareDataDictionary, elementDatas)
 	
 def generateLensFlare(camera, target, flareDataDictionary, elementDatas):
 	flareControler = newLensFlareFromDictionary(camera, target, flareDataDictionary)
 	for elementData in elementDatas:
-		newFlareElementFromDictionary(flareControler, elementData)
+		newFlareElementFromData(flareControler, elementData)
 	
 def saveLensFlare(flareControler, path):
 	flare = ET.Element("Flare")
@@ -716,27 +688,89 @@ def saveLensFlare(flareControler, path):
 	
 	elements = getElementEmptyObjects(flareControler)
 	for element in elements:
-		plane = getPlaneFromElement(element)
-		el = ET.SubElement(flare, "Element")
-		el.set("imageName", str(getImageFromElementEmpty(element).name))
-		el.set("name", element[elementNamePropertyName])
+		elementData = FlareElementData.FromElement(element)
 		
-		el.set("position", str(element[elementPositionName]))
-		el.set("intensity", str(element[intensityName]))
-		el.set("rotation", str(element[additionalRotationName]))
-		el.set("centerRotation", str(element[trackToCenterInfluenceName]))
-		el.set("width", str(element[scaleXName]))
-		el.set("height", str(element[scaleYName]))
-		el.set("horizontal", str(element[offsetXName]))
-		el.set("vertical", str(element[offsetYName]))
+		el = ET.SubElement(flare, "Element")
+		el.set("imageName", str(elementData.imageName))
+		el.set("name", str(elementData.name))
+		
+		el.set("position", str(elementData.position))
+		el.set("intensity", str(elementData.intensity))
+		el.set("rotation", str(elementData.rotation))
+		el.set("centerRotation", str(elementData.centerRotation))
+		el.set("width", str(elementData.width))
+		el.set("height", str(elementData.height))
+		el.set("horizontal", str(elementData.xOffset))
+		el.set("vertical", str(elementData.yOffset))
 		
 		multiplyColor = ET.SubElement(el, "multiplyColor")
-		color = getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value
-		multiplyColor.set("red", str(color[0]))
-		multiplyColor.set("green", str(color[1]))
-		multiplyColor.set("blue", str(color[2]))
+		multiplyColor.set("red", str(elementData.color[0]))
+		multiplyColor.set("green", str(elementData.color[1]))
+		multiplyColor.set("blue", str(elementData.color[2]))
 	
 	ET.ElementTree(flare).write(path)
+	
+class FlareElementData:
+	def __init__(self, 	name = "flare element", 
+						imageName = "circle.jpg",
+						position = 0.0, 
+						intensity = 1.0,
+						rotation = 0.0,
+						centerRotation = 0.0,
+						width = 1.0,
+						height = 1.0,
+						xOffset = 0.0,
+						yOffset = 0.0,
+						color = [1, 1, 1, 1]):
+		self.name = name
+		self.imageName = imageName
+		self.position = position
+		self.intensity = intensity
+		self.rotation = rotation
+		self.centerRotation = centerRotation
+		self.width = width
+		self.height = height
+		self.xOffset = xOffset
+		self.yOffset = yOffset
+		self.color = color
+	
+	def getImagePath(self):
+		return elementsFolder + self.imageName
+		
+	def setDataOnElement(self, element):
+		plane = getPlaneFromElement(element)
+		
+		element[elementNamePropertyName] = self.name
+		element[elementPositionName] = self.position
+		element[scaleXName] = self.width
+		element[scaleYName] = self.height
+		element[offsetXName] = self.xOffset
+		element[offsetYName] = self.yOffset
+		element[trackToCenterInfluenceName] = self.centerRotation
+		element[intensityName] = self.intensity
+		element[additionalRotationName] = self.rotation
+		setImagePathOnElementPlane(plane, self.getImagePath())
+		setMultiplyColorOnElementPlane(plane, self.color)
+		
+	def fromElement(element):
+		plane = getPlaneFromElement(element)
+	
+		elementData = FlareElementData()
+		elementData.name = element[elementNamePropertyName]
+		elementData.imageName = getImageFromElementEmpty(element).name
+		elementData.position = element[elementPositionName]
+		elementData.intensity = element[intensityName]
+		elementData.rotation = element[additionalRotationName]
+		elementData.centerRotation = element[trackToCenterInfluenceName]
+		elementData.width = element[scaleXName]
+		elementData.height = element[scaleYName]
+		elementData.xOffset = element[offsetXName]
+		elementData.yOffset = element[offsetYName]
+		elementData.color = getNodeWithNameInObject(plane, colorMultiplyNodeName).inputs[2].default_value
+		
+		return elementData
+	FromElement = staticmethod(fromElement)
+	
 	
 def loadLensFlare(path):
 	tree = ET.parse(path)
@@ -748,18 +782,17 @@ def loadLensFlare(path):
 	
 	elementDatas = []
 	for elementET in flareET:
-		elementDataDictionary = { }
-		elementDataDictionary[elementNamePropertyName] = getStringProperty(elementET, "name", "Flare Element")
-		elementDataDictionary[imagePathName] = elementsFolder + getStringProperty(elementET, "imageName", "circle.jpg")
-		
-		elementDataDictionary[elementPositionName] = getFloatProperty(elementET, "position", 0.0)
-		elementDataDictionary[intensityName] = getFloatProperty(elementET, "intensity", 1.0)
-		elementDataDictionary[additionalRotationName] = getIntProperty(elementET, "rotation", 0)
-		elementDataDictionary[trackToCenterInfluenceName] = getFloatProperty(elementET, "centerRotation", 0.0)
-		elementDataDictionary[scaleXName] = getFloatProperty(elementET, "width", 1.0)
-		elementDataDictionary[scaleYName] = getFloatProperty(elementET, "height", 1.0)
-		elementDataDictionary[offsetXName] = getFloatProperty(elementET, "horizontal", 0.0)
-		elementDataDictionary[offsetYName] = getFloatProperty(elementET, "vertical", 0.0)
+		elementData = FlareElementData()
+		elementData.name = getStringProperty(elementET, "name", "Flare Element")
+		elementData.imageName = getStringProperty(elementET, "imageName", "circle.jpg")
+		elementData.position = getFloatProperty(elementET, "position", 0.0)
+		elementData.intensity = getFloatProperty(elementET, "intensity", 1.0)
+		elementData.rotation = getIntProperty(elementET, "rotation", 0)
+		elementData.centerRotation = getFloatProperty(elementET, "centerRotation", 0.0)
+		elementData.width = getFloatProperty(elementET, "width", 1.0)
+		elementData.height = getFloatProperty(elementET, "height", 1.0)
+		elementData.xOffset = getFloatProperty(elementET, "horizontal", 0.0)
+		elementData.yOffset = getFloatProperty(elementET, "vertical", 0.0)
 		
 		multiplyColorET = elementET.find("multiplyColor")
 		color = [1, 1, 1, 1]
@@ -767,9 +800,9 @@ def loadLensFlare(path):
 		color[1] = getFloatProperty(multiplyColorET, "green", 1.0)
 		color[2] = getFloatProperty(multiplyColorET, "blue", 1.0)
 		
-		elementDataDictionary[colorMultiplyName] = color
+		elementData.color = color
 		
-		elementDatas.append(elementDataDictionary)
+		elementDatas.append(elementData)
 		
 
 	generateLensFlare(getActiveCamera(), getActive(), flareDataDictionary, elementDatas)
