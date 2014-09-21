@@ -700,7 +700,68 @@ def saveLensFlare(flareControler, path):
 		multiplyColor.set("green", str(elementData.color[1]))
 		multiplyColor.set("blue", str(elementData.color[2]))
 	
-	ET.ElementTree(flare).write(path)
+	ET.ElementTree(flare).write(path)	
+	
+def loadLensFlare(path):
+	tree = ET.parse(path)
+	flareET = tree.getroot()
+	
+	flareData = LensFlareData()
+	flareData.name = getStringProperty(flareET, "name", "Lens Flare")
+	flareData.intensity = getFloatProperty(flareET, "intensity", 1.0)
+	
+	elementDatas = []
+	for elementET in flareET:
+		elementData = FlareElementData()
+		elementData.name = getStringProperty(elementET, "name", "Flare Element")
+		elementData.imageName = getStringProperty(elementET, "imageName", "circle.jpg")
+		elementData.position = getFloatProperty(elementET, "position", 0.0)
+		elementData.intensity = getFloatProperty(elementET, "intensity", 1.0)
+		elementData.rotation = getIntProperty(elementET, "rotation", 0)
+		elementData.centerRotation = getFloatProperty(elementET, "centerRotation", 0.0)
+		elementData.width = getFloatProperty(elementET, "width", 1.0)
+		elementData.height = getFloatProperty(elementET, "height", 1.0)
+		elementData.xOffset = getFloatProperty(elementET, "horizontal", 0.0)
+		elementData.yOffset = getFloatProperty(elementET, "vertical", 0.0)
+		
+		multiplyColorET = elementET.find("multiplyColor")
+		color = [1, 1, 1, 1]
+		color[0] = getFloatProperty(multiplyColorET, "red", 1.0)
+		color[1] = getFloatProperty(multiplyColorET, "green", 1.0)
+		color[2] = getFloatProperty(multiplyColorET, "blue", 1.0)
+		
+		elementData.color = color
+		
+		elementDatas.append(elementData)
+		
+
+	generateLensFlare(getActiveCamera(), getActive(), flareData, elementDatas)
+
+def updateActiveFlareName():
+	flareControler = getCorrespondingFlareControler(getActive())
+	if flareControler is not None: setActiveFlareName(flareControler.name)
+def setActiveFlareName(flareControlerName):
+	global activeFlareName
+	activeFlareName = flareControlerName
+def isFlareActive():
+	return getActiveFlare() is not None
+def getActiveFlare():
+	return bpy.data.objects.get(activeFlareName)
+	
+def updateActiveElementName():
+	element = getCorrespondingElement(getActive())
+	if element is not None: setActiveElementName(element.name)
+def setActiveElementName(elementName):
+	global activeElementName
+	activeElementName = elementName
+def isElementActive():
+	return getActiveElement() is not None
+def getActiveElement():
+	activeFlare = getActiveFlare()
+	activeElement = bpy.data.objects.get(activeElementName)
+	if isPartOfFlareControler(activeElement, activeFlare): return activeElement
+	return None
+	
 	
 class LensFlareData:
 	def __init__(self, 	name = "lens flare",
@@ -779,67 +840,7 @@ class FlareElementData:
 		
 		return elementData
 	FromElement = staticmethod(fromElement)
-	
-	
-def loadLensFlare(path):
-	tree = ET.parse(path)
-	flareET = tree.getroot()
-	
-	flareData = LensFlareData()
-	flareData.name = getStringProperty(flareET, "name", "Lens Flare")
-	flareData.intensity = getFloatProperty(flareET, "intensity", 1.0)
-	
-	elementDatas = []
-	for elementET in flareET:
-		elementData = FlareElementData()
-		elementData.name = getStringProperty(elementET, "name", "Flare Element")
-		elementData.imageName = getStringProperty(elementET, "imageName", "circle.jpg")
-		elementData.position = getFloatProperty(elementET, "position", 0.0)
-		elementData.intensity = getFloatProperty(elementET, "intensity", 1.0)
-		elementData.rotation = getIntProperty(elementET, "rotation", 0)
-		elementData.centerRotation = getFloatProperty(elementET, "centerRotation", 0.0)
-		elementData.width = getFloatProperty(elementET, "width", 1.0)
-		elementData.height = getFloatProperty(elementET, "height", 1.0)
-		elementData.xOffset = getFloatProperty(elementET, "horizontal", 0.0)
-		elementData.yOffset = getFloatProperty(elementET, "vertical", 0.0)
-		
-		multiplyColorET = elementET.find("multiplyColor")
-		color = [1, 1, 1, 1]
-		color[0] = getFloatProperty(multiplyColorET, "red", 1.0)
-		color[1] = getFloatProperty(multiplyColorET, "green", 1.0)
-		color[2] = getFloatProperty(multiplyColorET, "blue", 1.0)
-		
-		elementData.color = color
-		
-		elementDatas.append(elementData)
-		
 
-	generateLensFlare(getActiveCamera(), getActive(), flareData, elementDatas)
-
-def updateActiveFlareName():
-	flareControler = getCorrespondingFlareControler(getActive())
-	if flareControler is not None: setActiveFlareName(flareControler.name)
-def setActiveFlareName(flareControlerName):
-	global activeFlareName
-	activeFlareName = flareControlerName
-def isFlareActive():
-	return getActiveFlare() is not None
-def getActiveFlare():
-	return bpy.data.objects.get(activeFlareName)
-	
-def updateActiveElementName():
-	element = getCorrespondingElement(getActive())
-	if element is not None: setActiveElementName(element.name)
-def setActiveElementName(elementName):
-	global activeElementName
-	activeElementName = elementName
-def isElementActive():
-	return getActiveElement() is not None
-def getActiveElement():
-	activeFlare = getActiveFlare()
-	activeElement = bpy.data.objects.get(activeElementName)
-	if isPartOfFlareControler(activeElement, activeFlare): return activeElement
-	return None
 
 	
 	
