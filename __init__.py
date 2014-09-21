@@ -79,7 +79,6 @@ imagePathName = "image path"
 colorMultiplyName = "multiply color"
 additionalRotationName = "additional rotation"
 trackToCenterInfluenceName = "track to center influence"
-intensityNodeName = "intensity"
 intensityName = "intensity"
 imageNodeName = "image node"
 colorMultiplyNodeName = "color multiply node"
@@ -459,17 +458,12 @@ def newCyclesFlareMaterial(image):
 	imageNode = newImageTextureNode(nodeTree)
 	colorRamp = newColorRampNode(nodeTree)
 	colorMultiply = newColorMixNode(nodeTree, type = "MULTIPLY", factor = 1.0, default2 = [1.0, 1.0, 1.0, 1.0])
-	rerouteImage = newRerouteNode(nodeTree)
-	toBw = newRgbToBwNode(nodeTree)
-	mixColor = newColorMixNode(nodeTree, type = "DIVIDE", factor = 1.0)
 	emission = newEmissionNode(nodeTree)
-	intensityNode = newMathNode(nodeTree, type = "MULTIPLY", default = 1.0)
 	transparent = newTransparentNode(nodeTree)
-	mixShader = newMixShader(nodeTree)
+	addShader = newAddShader(nodeTree)
 	output = newOutputNode(nodeTree)
 	
 	imageNode.image = image
-	intensityNode.name = intensityNodeName
 	imageNode.name = imageNodeName
 	colorMultiply.name = colorMultiplyNodeName
 	emission.name = emissionNodeName
@@ -477,14 +471,9 @@ def newCyclesFlareMaterial(image):
 	newNodeLink(nodeTree, textureCoordinatesNode.outputs["Generated"], imageNode.inputs[0])
 	newNodeLink(nodeTree, imageNode.outputs[0], colorRamp.inputs[0])
 	newNodeLink(nodeTree, colorRamp.outputs[0], colorMultiply.inputs[1])
-	newNodeLink(nodeTree, colorMultiply.outputs[0], rerouteImage.inputs[0])
-	newNodeLink(nodeTree, rerouteImage.outputs[0], toBw.inputs[0])
-	newNodeLink(nodeTree, rerouteImage.outputs[0], mixColor.inputs[1])
-	newNodeLink(nodeTree, toBw.outputs[0], mixColor.inputs[2])
-	newNodeLink(nodeTree, mixColor.outputs[0], emission.inputs[0])
-	newNodeLink(nodeTree, rerouteImage.outputs[0], intensityNode.inputs[0])
-	linkToMixShader(nodeTree, transparent.outputs[0], emission.outputs[0], mixShader, factor = intensityNode.outputs[0])
-	newNodeLink(nodeTree, mixShader.outputs[0], output.inputs[0])
+	newNodeLink(nodeTree, colorMultiply.outputs[0], emission.inputs[0])
+	linkToAddShader(nodeTree, emission.outputs[0], transparent.outputs[0], addShader)
+	newNodeLink(nodeTree, addShader.outputs[0], output.inputs[0])
 	return material
 	
 def setScaleConstraintOnElementPlane(plane, element, camera):
@@ -544,10 +533,10 @@ def setLimitLocationConstraintOnElementPlane(plane, element, camera):
 		driver.expression = "offset*distance"
 		
 def setIntensityDriverOnElementPlane(plane, element, flareControler):
-	driver = newDriver(getNodeWithNameInObject(plane, intensityNodeName).inputs[1], "default_value")
+	driver = newDriver(getNodeWithNameInObject(plane, emissionNodeName).inputs[1], "default_value")
 	linkFloatPropertyToDriver(driver, "objectIntensity", element, intensityPath)
 	linkFloatPropertyToDriver(driver, "flareIntensity", flareControler, intensityPath)
-	driver.expression = "objectIntensity * flareIntensity"
+	driver.expression = "(objectIntensity * flareIntensity)**2"
 	
 def setAdditionalRotationDriverOnElementPlane(plane, element):
 	driver = newDriver(plane, "rotation_euler", index = 2)
